@@ -10,7 +10,7 @@
 # - Clean up all if then statements, variable/array names, and add better comments
 # - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
-
+# - 
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
