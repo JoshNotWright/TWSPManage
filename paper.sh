@@ -6,7 +6,6 @@
 # - It might be possible to use whiptail to poll backup status... even though the process would take forever, it would be possible to do. On that note, a backup all feature is kinda pointless. Much easier to have just a checklist because server activity varies
 # - I wonder if I could use eggs to temp overwrite the MOTD to say the server is updating
 # - Cancel in sub menu take you back to menu
-# - Start/Stop All by node?
 # - Clean up all if then statements, variable/array names, and add better comments
 # - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
