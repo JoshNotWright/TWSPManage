@@ -80,7 +80,7 @@ MindustryServers=(
     '5dfafc10-437a-4673-a0dc-57d978319355'
 )
 
-# Server Install Function
+# API call to request server install and then wait 10 seconds
 function ServerInstall {
     curl -s "http://thewrightserver.net/api/client/servers/$n/settings/reinstall" > /dev/null \
   -H 'Accept: application/json' \
@@ -98,7 +98,7 @@ function ServerInstall {
     done |whiptail --gauge "Please wait while the server is starting update" 6 60 0
 }
 
-# Server Start Function
+# API call to request server start and then wait 10 seconds
 function ServerStart {
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
@@ -119,7 +119,7 @@ function ServerStart {
     done |whiptail --gauge "Please wait while the server is starting" 6 60 0
 }
 
-# Server Stop Function
+# API call to request server stop and wait 10 seconds
 function ServerStop {
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
@@ -140,7 +140,7 @@ function ServerStop {
     done |whiptail --gauge "Please wait while the server is shutting down" 6 60 0
 }
 
-# Server Restart Function
+# API call to request server restart and wait 10 seconds
 function ServerRestart {
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
@@ -161,7 +161,7 @@ function ServerRestart {
     done |whiptail --gauge "Please wait while the server is restarting" 6 60 0
 }
 
-# Server Backup Function
+# API call to request server backup and wait 10 seconds
 function Backup {
      curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
        -H 'Accept: application/json' \
@@ -179,7 +179,7 @@ function Backup {
     done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
 }
 
-# Snapshot Varaible Change
+# API calls that updates the variables (Whitelist, Current Version, and Player Count) for the snapshot server
 function SnapshotVariableChange {
      LATEST_VERSION=`curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot'` > /dev/null
      LATEST_RELEASE=`curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.release'` > /dev/null
@@ -263,7 +263,7 @@ function SnapshotVariableChange {
     fi
 }
 
-# Sends a message to the server
+# API call that sends a message on the server and waits 5 seconds
 function AnnounceMessage {
    curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
@@ -283,7 +283,7 @@ function AnnounceMessage {
     done |whiptail --gauge "Please wait while the server announces your message" 6 65 0
 }
 
-# Announce Downtime for Update Function
+# API call that sends a message to announce when it's updating and waits 5 seconds
 function AnnounceDowntimeUpdate {
    curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
