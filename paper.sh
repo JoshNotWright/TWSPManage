@@ -677,7 +677,7 @@ case $choice in
             fi
         else
             clear
-            echo "fuck off <3"
+            echo "Incorrect admin password."
             exit
         fi
     ;;
@@ -714,7 +714,7 @@ case $choice in
             fi
         else
             clear
-            echo "fuck off <3"
+            echo "Incorrect admin password."
             exit
         fi
     ;;
