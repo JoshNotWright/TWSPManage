@@ -8,6 +8,7 @@
 # - Ask if user wants to update all before stopping servers
 # - Dockerize
 # - We can absolutely use JQ and API list backups to check if a backup has failed to retry. If we wanted to implement a more involved backup system, that is
+# - Add GUI to the new backup functions
 
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
