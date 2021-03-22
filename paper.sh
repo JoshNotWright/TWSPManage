@@ -4,7 +4,6 @@
 # - Auto delete backups if they're old. Backup func (first set every server to have the same limit i.e 10): List backups -> if backup count = backup limit then delete the oldest
 # - It might be possible to use whiptail to poll backup status... even though the process would take forever, it would be possible to do. On that note, a backup all feature is kinda pointless. Much easier to have just a checklist because server activity varies
 # - Cancel in sub menu take you back to menu
-# - Clean up all if then statements, variable/array names, and add better comments
 # - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
 # - 
