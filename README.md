@@ -1,5 +1,5 @@
 # TWSPManage
-**TWSPManage** is a personal management tool that I use to maintain my Pterodactyl servers
+**TWSPManage** is a personal management tool that I use to maintain my [Pterodactyl](https://github.com/pterodactyl) servers
 ## Current Features
 - Automatically update all servers
 - Send custom messages to all/select servers
