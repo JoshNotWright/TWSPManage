@@ -5,9 +5,8 @@
 - Send custom messages to all/select servers
 - Start/Stop all/select servers
 - Backup all/select servers
+- Automatically delete backups when you hit backup capacity
 
 ## Planned Features
 - Update on server stop
 
-## Currently Implenting
-- Automatically delete backups when you hit backup capacity
