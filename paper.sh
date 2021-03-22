@@ -6,7 +6,8 @@
 # - Cancel in sub menu take you back to menu
 # - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
-# - 
+# - Dockerize
+
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
