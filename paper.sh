@@ -2,11 +2,8 @@
 # Server Management Tool for TheWrightServer
 # Todo
 # - Auto delete backups if they're old. Backup func (first set every server to have the same limit i.e 10): List backups -> if backup count = backup limit then delete the oldest
-# - Could you use the server listing options to automatically pull server UDIDs into the arrays? EX: API calls grab all the server UDIDs running on the Paper egg
 # - It might be possible to use whiptail to poll backup status... even though the process would take forever, it would be possible to do. On that note, a backup all feature is kinda pointless. Much easier to have just a checklist because server activity varies
-# - I wonder if I could use eggs to temp overwrite the MOTD to say the server is updating
 # - Cancel in sub menu take you back to menu
-# - Start/Stop All by node?
 # - Clean up all if then statements, variable/array names, and add better comments
 # - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
@@ -304,7 +301,7 @@ function AnnounceDowntimeUpdate {
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.7.2" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.8" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -644,37 +641,75 @@ case $choice in
     ;;
     6.)
         # Stop All
+        clear
         passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
         if [ $PASS == $passinput ]; then
-            clear
-            if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
-                clear
-                ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                for n in "${AllAllServers[@]}"
-                do
-                AnnounceMessage
-                done
-                clear
-                echo "Making sure all servers are turned off..."
-                for n in "${AllAllServers[@]}"
-                do
-                ServerStop
-                done
-                echo "All servers have been stopped successfully"
-            else
-                clear
-                for n in "${AllAllServers[@]}"
-                do
-                AnnounceMessage
-                done
-                clear
-                echo "Making sure all servers are turned off..."
-                for n in "${AllAllServers[@]}"
-                do
-                ServerStop
-                done
-                echo "All servers have been stopped successfully"
-            fi
+            NodeStop=$(whiptail --title "TheWrightServer" --radiolist "Which node would you like to stop?" --separate-output 20 78 4 \
+            "1." "Node 1" OFF \
+            "2." "Node 2" OFF \
+            3>&1 1>&2 2>&3)
+            case $NodeStop in
+                1.)
+                    # Node 1 Stop All
+                    clear
+                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                        clear
+                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
+                        echo "Stopping all servers on Node 1..."
+                        for n in "${Node1Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node1Servers[@]}"
+                        do
+                        ServerStop
+                        done
+                        echo "All servers have been stopped on Node 1"
+                    else
+                        clear
+                        echo "Stopping all servers on Node 1..."
+                        for n in "${Node1Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node1Servers[@]}"
+                        do
+                        ServerStop
+                        done
+                        echo "All servers have been stopped on Node 1"
+                    fi
+                ;;
+                2.)
+                    # Node 2 Stop All
+                    clear
+                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                        clear
+                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
+                        echo "Stopping all servers on Node 1..."
+                        for n in "${Node2Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node2Servers[@]}"
+                        do
+                        ServerStop
+                        done
+                        echo "All servers have been stopped on Node 1"
+                    else
+                        clear
+                        echo "Stopping all servers on Node 1..."
+                        for n in "${Node2Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node2Servers[@]}"
+                        do
+                        ServerStop
+                        done
+                        echo "All servers have been stopped on Node 1"
+                    fi
+                ;;
+            esac
         else
             clear
             echo "Incorrect admin password."
@@ -686,32 +721,72 @@ case $choice in
         clear
         passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
         if [ $PASS == $passinput ]; then
-            if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
-                clear
-                ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                for n in "${AllAllServers[@]}"
-                do
-                AnnounceMessage
-                done
-                clear
-                for n in "${AllAllServers[@]}"
-                do
-                ServerRestart
-                done
-                echo "All servers have been restarted successfully"
-            else
-                clear
-                for n in "${AllAllServers[@]}"
-                do
-                AnnounceMessage
-                done
-                clear
-                for n in "${AllAllServers[@]}"
-                do
-                ServerRestart
-                done
-                echo "All servers have been restarted successfully"
-            fi
+            NodeRestart=$(whiptail --title "TheWrightServer" --radiolist "Which node would you like to restart?" --separate-output 20 78 4 \
+            "1." "Node 1" OFF \
+            "2." "Node 2" OFF \
+            3>&1 1>&2 2>&3)
+            case $NodeRestart in
+                1.)
+                    # Node 1 Restart All
+                    clear
+                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                        clear
+                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
+                        echo "Restarting all servers on Node 1..."
+                        for n in "${Node1Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node1Servers[@]}"
+                        do
+                        ServerRestart
+                        done
+                        echo "All servers have been restarted on Node 1"
+                    else
+                        clear
+                        echo "Restarting all servers on Node 1..."
+                        for n in "${Node1Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node1Servers[@]}"
+                        do
+                        ServerRestart
+                        done
+                        echo "All servers have been restarted on Node 1"
+                    fi
+                ;;
+                2.)
+                    # Node 2 Restart All
+                    clear
+                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                        clear
+                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
+                        echo "Restarting all servers on Node 1..."
+                        for n in "${Node2Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node2Servers[@]}"
+                        do
+                        ServerRestart
+                        done
+                        echo "All servers have been restarted on Node 1"
+                    else
+                        clear
+                        echo "Restarting all servers on Node 1..."
+                        for n in "${Node2Servers[@]}"
+                        do
+                        AnnounceMessage
+                        done
+                        for n in "${Node2Servers[@]}"
+                        do
+                        ServerRestart
+                        done
+                        echo "All servers have been restarted on Node 1"
+                    fi
+                ;;
+            esac
         else
             clear
             echo "Incorrect admin password."
