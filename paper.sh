@@ -299,9 +299,24 @@ function AnnounceDowntimeUpdate {
     done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
 }
 
+
+# TODO
+# 1. Backup Function Starts
+# 2. Calls BackupQuery Function
+# 3. If BackupQuery returns the maximum number of backups, then run BackupRemoveOldest
+# 3a (Optional). Run BackupQuery again to ensure it was successful
+# 4. Once BackupRemoveOldest completes successfully, run the backup as usual
+
 function BackupQuery {
 # TODO
 # 1. API GET List Backups https://dashflo.net/docs/api/pterodactyl/v1/#req_a7e189492b784c5cb12eaffa1368a06c
+   curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \ > /tmp/backups.json
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
+
 # 2. Parse list and count number of objects (backups)
 # 3. Return count as int
 }
