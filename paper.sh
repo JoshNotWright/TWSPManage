@@ -163,20 +163,47 @@ function ServerRestart {
 
 # API call to request server backup and wait 10 seconds
 function Backup {
-     curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
-       -H 'Accept: application/json' \
-       -H 'Content-Type: application/json' \
-       -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-       -X POST \
-       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
-    msgs=( "Backing up $n." "Backing up $n.." "Backing up $n..." "$n is backing up!" "Done" )
-    for i in {1..5}; do
-    sleep 2
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
+    # API GET List Backups and use JQ to pull object total to set that as BackupCount
+     BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' )
+     echo $BackupCount
+     if [[ "$BackupCount" -eq 10 ]]; then
+        echo "Reached backup limit, removing oldest"
+        BackupRemoveOldest
+        curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -X POST \
+        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
+        msgs=( "Backing up $n." "Backing up $n.." "Backing up $n..." "$n is backing up!" "Done" )
+            for i in {1..5}; do
+            sleep 2
+            echo XXX
+            echo $(( i * 20 ))
+            echo ${msgs[i-1]}
+            echo XXX
+            done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
+    else
+        curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -X POST \
+        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
+        msgs=( "Backing up $n." "Backing up $n.." "Backing up $n..." "$n is backing up!" "Done" )
+            for i in {1..5}; do
+            sleep 2
+            echo XXX
+            echo $(( i * 20 ))
+            echo ${msgs[i-1]}
+            echo XXX
+            done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
+    fi
 }
 
 # API calls that updates the variables (Whitelist, Current Version, and Player Count) for the snapshot server
@@ -303,24 +330,6 @@ function AnnounceDowntimeUpdate {
     done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
 }
 
-
-# TODO
-# 1. Backup Function Starts
-# 2. Calls BackupQuery Function
-# 3. If BackupQuery returns the maximum number of backups, then run BackupRemoveOldest
-# 3a (Optional). Run BackupQuery again to ensure it was successful
-# 4. Once BackupRemoveOldest completes successfully, run the backup as usual
-
-# API GET List Backups and use JQ to pull object total to set that as BackupCount
-function BackupQuery {
-   BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
-     -H 'Accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-     -X GET \
-     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' )
-}
-
 function BackupRemoveOldest {
     # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first one
     BackupToRemove=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
@@ -338,14 +347,9 @@ function BackupRemoveOldest {
      -X DELETE \
     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
-# TODO
-# 1. API GET List Backups
-# 2. Parse list and return the oldest's UUID
-# 3. API DELETE backup https://dashflo.net/docs/api/pterodactyl/v1/#req_b96e2a34214142f7b94e9a6f45adce23
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.9 Alpha" --fb --menu "Select an option" 18 100 10 \
-    "11." "Unit Test" \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.9" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -839,8 +843,8 @@ case $choice in
     ;;
     8.)
         # Backup
-        ANNOUNCE_MESSAGE= "This server is starting a backup that may cause small occasional lag spikes. This process is estimated to take around 20 minutes, and no downtime is expected."
         if (whiptail --title "Warning" --yesno "Backing up takes up considerable resources and may cause lag. Are you sure you want to continue?" 8 78); then
+            ANNOUNCE_MESSAGE="This server is starting a backup that may cause small occasional lag spikes. This process is estimated to take around 20 minutes, and no downtime is expected."
             Backup=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
             "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
             "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
@@ -895,14 +899,5 @@ case $choice in
     10.)
         # Exit
         exit
-    ;;
-    11.)
-        # Unit Testing for BackupQuery, BackupRemoveOldest, and Backup
-        clear
-        echo "Unit Test"
-        for n in "${SnapshotServers[@]}"
-        do
-        BackupRemoveOldest
-        done
     ;;
 esac
