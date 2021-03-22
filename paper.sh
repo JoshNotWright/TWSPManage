@@ -307,21 +307,18 @@ function AnnounceDowntimeUpdate {
 # 3a (Optional). Run BackupQuery again to ensure it was successful
 # 4. Once BackupRemoveOldest completes successfully, run the backup as usual
 
+# API GET List Backups https://dashflo.net/docs/api/pterodactyl/v1/#req_a7e189492b784c5cb12eaffa1368a06c and use JQ to pull object total to set that as BackupCount
 function BackupQuery {
-# TODO
-# 1. API GET List Backups https://dashflo.net/docs/api/pterodactyl/v1/#req_a7e189492b784c5cb12eaffa1368a06c
-   curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \ > /tmp/backups.json
+   BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
      -X GET \
-     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
-
-# 2. Parse list and count number of objects (backups)
-# 3. Return count as int
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' )
 }
 
 function BackupRemoveOldest {
+    echo "Backup Remove Oldest"
 # TODO
 # 1. API GET List Backups
 # 2. Parse list and return the oldest's UUID
@@ -340,6 +337,7 @@ choice=$(whiptail --title "TheWrightServer Management Tool v3.9 Alpha" --fb --me
     "7." "Restart All" \
     "8." "Backup" \
     "9." "Send Message" \
+    "11." "Unit Test" \
     "10." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
@@ -880,5 +878,14 @@ case $choice in
     10.)
         # Exit
         exit
+    ;;
+    11.)
+        # Unit Testing for BackupQuery, BackupRemoveOldest, and Backup
+        clear
+        echo "Unit Test"
+        for n in "${SnapshotServers[@]}"
+        do
+        BackupQuery
+        done
     ;;
 esac
