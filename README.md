@@ -7,5 +7,7 @@
 - Backup all/select servers
 
 ## Planned Features
-- Automatically delete backups when you hit backup capacity
 - Update on server stop
+
+## Currently Implenting
+- Automatically delete backups when you hit backup capacity
