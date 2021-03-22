@@ -299,17 +299,20 @@ function AnnounceDowntimeUpdate {
     done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
 }
 
-function BackupQuery
+function BackupQuery {
 # TODO
 # 1. API GET List Backups https://dashflo.net/docs/api/pterodactyl/v1/#req_a7e189492b784c5cb12eaffa1368a06c
 # 2. Parse list and count number of objects (backups)
 # 3. Return count as int
+}
 
-function BackupRemoveOldest
+function BackupRemoveOldest {
 # TODO
 # 1. API GET List Backups
 # 2. Parse list and return the oldest's UUID
 # 3. API DELETE backup https://dashflo.net/docs/api/pterodactyl/v1/#req_b96e2a34214142f7b94e9a6f45adce23
+}
+
 
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.8" --fb --menu "Select an option" 18 100 10 \
