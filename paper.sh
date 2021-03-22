@@ -809,7 +809,7 @@ case $choice in
                     if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Restarting all servers on Node 1..."
+                        echo "Restarting all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
                         do
                         AnnounceMessage
@@ -818,10 +818,10 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 1"
+                        echo "All servers have been restarted on Node 2"
                     else
                         clear
-                        echo "Restarting all servers on Node 1..."
+                        echo "Restarting all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
                         do
                         AnnounceMessage
@@ -830,7 +830,7 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 1"
+                        echo "All servers have been restarted on Node 2"
                     fi
                 ;;
             esac
