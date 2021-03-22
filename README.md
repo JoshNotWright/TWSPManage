@@ -10,3 +10,4 @@
 ## Planned Features
 - Update on server stop
 - Check for failed backups, delete them, and make a new backup
+- Friendly server names
