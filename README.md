@@ -6,8 +6,8 @@
 - Start/Stop all/select servers
 - Backup all/select servers
 - Automatically delete backups when you hit backup capacity
+- Automatically handle failed backups
 
 ## Planned Features
 - Update on server stop
-- Check for failed backups, delete them, and make a new backup
-- Friendly server names
+- Friendly server names in GUI
