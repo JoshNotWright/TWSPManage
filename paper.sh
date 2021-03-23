@@ -181,7 +181,7 @@ function Backup {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' )
      if [[ "$BackupCount" -eq 10 ]]; then
-        echo "Reached backup limit, removing oldest"
+        echo "Reached backup limit on $FriendlyName, removing oldest"
         BackupRemoveOldest
         curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
         -H 'Accept: application/json' \
@@ -350,7 +350,7 @@ function BackupRemoveOldest {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.uuid'
      )
-    echo ${BackupToRemove:0:36}
+    echo  Removing Backup: ${BackupToRemove:0:36}
     curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${BackupToRemove:0:36}" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -369,7 +369,8 @@ function FailedBackupCheck {
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
      )
      if [ ${#FailedBackup} -ge 36 ]; then
-        echo "Found failed backup on $FriendlyName Backup ID: $FailedBackup"
+        whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
+        clear
         curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
          -H 'Accept: application/json' \
          -H 'Content-Type: application/json' \
@@ -377,7 +378,7 @@ function FailedBackupCheck {
          -X DELETE \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
         sleep 5
-        echo "Failed backup $FailedBackup removed, starting new backup attempt"
+        echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
         Backup
      else
         echo "There doesn't appear to be any failed backups on $FriendlyName"
@@ -395,7 +396,7 @@ function GetFriendlyName {
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.11.1 Alpha" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.11.1" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
