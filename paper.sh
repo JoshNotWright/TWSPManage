@@ -87,13 +87,14 @@ MindustryServers=(
 
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
+    GetFriendlyName
     curl -s "http://thewrightserver.net/api/client/servers/$n/settings/reinstall" > /dev/null \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
   -X POST \
   -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
-    msgs=( "Updating $n." "Updating $n.." "Updating $n..." "$n is now updating!" "Done" )
+    msgs=( "Updating $FriendlyName." "Updating $FriendlyName.." "Updating $FriendlyName..." "$FriendlyName is now updating!" "Done" )
     for i in {1..5}; do
     sleep 2
     echo XXX
@@ -105,6 +106,7 @@ function ServerInstall {
 
 # API call to request server start and then wait 10 seconds
 function ServerStart {
+    GetFriendlyName
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
@@ -114,7 +116,7 @@ function ServerStart {
         -d '{
     "signal": "start"
     }'
-    msgs=( "Starting $n." "Starting $n.." "Starting $n..." "$n is almost ready!" "Done" )
+    msgs=( "Starting $FriendlyName." "Starting $FriendlyName.." "Starting $FriendlyName..." "$FriendlyName is almost ready!" "Done" )
     for i in {1..5}; do
     sleep 2
     echo XXX
@@ -126,6 +128,7 @@ function ServerStart {
 
 # API call to request server stop and wait 10 seconds
 function ServerStop {
+    GetFriendlyName
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
@@ -135,7 +138,7 @@ function ServerStop {
         -d '{
     "signal": "stop"
     }'
-    msgs=( "Stopping $n." "Stopping $n.." "Stopping $n..." "$n is shutting down!" "Done" )
+    msgs=( "Stopping $FriendlyName." "Stopping $FriendlyName.." "Stopping $FriendlyName..." "$FriendlyName is shutting down!" "Done" )
     for i in {1..5}; do
     sleep 2
     echo XXX
@@ -147,6 +150,7 @@ function ServerStop {
 
 # API call to request server restart and wait 10 seconds
 function ServerRestart {
+    GetFriendlyName
     curl "http://thewrightserver.net/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
@@ -156,7 +160,7 @@ function ServerRestart {
         -d '{
     "signal": "restart"
     }'
-    msgs=( "Restarting $n." "Restarting $n.." "Restarting $n..." "$n is restarting!" "Done" )
+    msgs=( "Restarting $FriendlyName." "Restarting $FriendlyName.." "Restarting $FriendlyName..." "$FriendlyName is restarting!" "Done" )
     for i in {1..5}; do
     sleep 2
     echo XXX
@@ -168,6 +172,7 @@ function ServerRestart {
 
 # API call to request server backup and wait 10 seconds
 function Backup {
+    GetFriendlyName
     # API GET List Backups and use JQ to pull object total to set that as BackupCount
      BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
@@ -184,7 +189,7 @@ function Backup {
         -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
-        msgs=( "Backing up $n." "Backing up $n.." "Backing up $n..." "$n is backing up!" "Done" )
+        msgs=( "Backing up $FriendlyName." "Backing up $FriendlyName.." "Backing up $FriendlyName..." "$FriendlyName is backing up!" "Done" )
             for i in {1..5}; do
             sleep 2
             echo XXX
@@ -199,7 +204,7 @@ function Backup {
         -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
-        msgs=( "Backing up $n." "Backing up $n.." "Backing up $n..." "$n is backing up!" "Done" )
+        msgs=( "Backing up $FriendlyName." "Backing up $FriendlyName.." "Backing up $FriendlyName..." "$FriendlyName is backing up!" "Done" )
             for i in {1..5}; do
             sleep 2
             echo XXX
@@ -296,6 +301,7 @@ function SnapshotVariableChange {
 
 # API call that sends a message on the server and waits 5 seconds
 function AnnounceMessage {
+    GetFriendlyName
    curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -304,7 +310,7 @@ function AnnounceMessage {
      -d '{
      "command": "say '"$ANNOUNCE_MESSAGE"'"
   }'
-    msgs=( "Sending message on $n." "Sending message on $n.." "Sending message on $n..." "Message has been sent to $n" "Done" )
+    msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
     for i in {1..5}; do
     sleep 1
     echo XXX
@@ -316,6 +322,7 @@ function AnnounceMessage {
 
 # API call that sends a message to announce when it's updating and waits 5 seconds
 function AnnounceDowntimeUpdate {
+    GetFriendlyName
    curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -324,7 +331,7 @@ function AnnounceDowntimeUpdate {
      -d '{
      "command": "say This server is going down momentarily to update. This process is automated, and is expected to take around 5 minutes to complete."
   }'
-    msgs=( "Sending message on $n." "Sending message on $n.." "Sending message on $n..." "Message has been sent to $n" "Done" )
+    msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
     for i in {1..5}; do
     sleep 1
     echo XXX
@@ -353,6 +360,7 @@ function BackupRemoveOldest {
 }
 
 function FailedBackupCheck {
+    GetFriendlyName
     FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -361,7 +369,7 @@ function FailedBackupCheck {
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
      )
      if [ ${#FailedBackup} -ge 36 ]; then
-        echo Found failed backup on server $n: $FailedBackup
+        echo "Found failed backup on $FriendlyName Backup ID: $FailedBackup"
         curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
          -H 'Accept: application/json' \
          -H 'Content-Type: application/json' \
@@ -369,15 +377,25 @@ function FailedBackupCheck {
          -X DELETE \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
         sleep 5
-        echo "Failed backup removed, starting new backup attempt"
+        echo "Failed backup $FailedBackup removed, starting new backup attempt"
         Backup
      else
-        echo "There doesn't appear to be a failed backup on server $n"
+        echo "There doesn't appear to be a failed backup on $FriendlyName"
      fi
 }
 
+function GetFriendlyName {
+     FriendlyName=$( curl -s "http://thewrightserver.net/api/client/servers/$n" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.name'
+    )
+}
+
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.10" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.11" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -762,7 +780,7 @@ case $choice in
                     if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Stopping all servers on Node 1..."
+                        echo "Stopping all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
                         do
                         AnnounceMessage
@@ -771,10 +789,10 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 1"
+                        echo "All servers have been stopped on Node 2"
                     else
                         clear
-                        echo "Stopping all servers on Node 1..."
+                        echo "Stopping all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
                         do
                         AnnounceMessage
@@ -783,7 +801,7 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 1"
+                        echo "All servers have been stopped on Node 2"
                     fi
                 ;;
             esac
