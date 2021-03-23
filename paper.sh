@@ -352,8 +352,33 @@ function BackupRemoveOldest {
     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
 
+function FailedBackupCheck {
+    FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
+     )
+     if [ ${#FailedBackup} -ge 36 ]; then
+        echo Found failed backup on server $n: $FailedBackup
+        curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
+         -H 'Accept: application/json' \
+         -H 'Content-Type: application/json' \
+         -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+         -X DELETE \
+        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+        sleep 5
+        echo "Failed backup removed, starting new backup attempt"
+        Backup
+     else
+        echo "There doesn't appear to be a failed backup on server $n"
+     fi
+}
+
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.9.1" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.10 Alpha" --fb --menu "Select an option" 18 100 10 \
+    "11." "Failed Backup Check Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -903,5 +928,14 @@ case $choice in
     10.)
         # Exit
         exit
+    ;;
+    11.)
+        # Failed Backup Check Test
+        Test="068416f4-ea04-4b41-8fe9-ecad94000059"
+        TestArray=($Test)
+        for n in "${PaperGeyserServers[@]}"
+        do
+        FailedBackupCheck
+        done
     ;;
 esac
