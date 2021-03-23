@@ -7,7 +7,7 @@
 - Backup all/select servers
 - Automatically delete backups when you hit backup capacity
 - Automatically handle failed backups
+- Friendly server names in GUI
 
 ## Planned Features
 - Update on server stop
-- Friendly server names in GUI
