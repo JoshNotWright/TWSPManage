@@ -427,8 +427,20 @@ function DisplayTime {
 
 }
 
+function GetBackupLimit {
+    BackupLimit=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+     )
+     echo $BackupLimit
+}
+
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.12" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.13 Alpha" --fb --menu "Select an option" 18 100 10 \ 
+    "13." "Backup Limit Check Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -995,5 +1007,10 @@ case $choice in
         # Exit
         exit
     ;;
-
+    13.)
+        # Backup Limit Check Test
+        clear
+        for n in "${SnapshotServers[@]}"; do
+        GetBackupLimit; done
+    ;;
 esac
