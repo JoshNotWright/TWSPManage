@@ -173,14 +173,9 @@ function ServerRestart {
 # API call to request server backup and wait 10 seconds
 function Backup {
     GetFriendlyName
-    # API GET List Backups and use JQ to pull object total to set that as BackupCount
-     BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
-     -H 'Accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-     -X GET \
-     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' )
-     if [[ "$BackupCount" -eq 10 ]]; then
+    GetBackupLimit
+    GetBackupCount
+     if [[ "$BackupCount" -eq "$BackupLimit" ]]; then
         echo "Reached backup limit on $FriendlyName, removing oldest"
         BackupRemoveOldest
         curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
@@ -428,18 +423,28 @@ function DisplayTime {
 }
 
 function GetBackupLimit {
-    BackupLimit=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+    BackupLimit=$( curl -s "http://thewrightserver.net/api/client/servers/$n/" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
      -X GET \
-     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.feature_limits' | jq -r '.backups'
      )
-     echo $BackupLimit
+}
+
+# API GET List Backups and use JQ to pull object total to set that as BackupCount
+function GetBackupCount {
+     BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' 
+     )
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.13 Alpha" --fb --menu "Select an option" 18 100 10 \ 
+choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "13." "Backup Limit Check Test" \
     "1." "Update" \
     "2." "Start" \
