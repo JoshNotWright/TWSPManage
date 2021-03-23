@@ -395,8 +395,40 @@ function GetFriendlyName {
     )
 }
 
+function CheckLastBackup {
+    GetFriendlyName
+    Now=$(date)
+    LastBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.completed_at'
+     )
+     SecondsNow=$(date -d"$Now" +%s)
+     SecondsLastBackup=$(date -d"${LastBackup: -25}" +%s)
+     SecondsCalc=$((SecondsNow - SecondsLastBackup))
+     TimeDifference=$(DisplayTime $SecondsCalc)
+     echo "It has been $TimeDifference since $FriendlyName was last backed up"
+
+}
+
+function DisplayTime {
+  local T=$1
+  local D=$((T/60/60/24))
+  local H=$((T/60/60%24))
+  local M=$((T/60%60))
+  local S=$((T%60))
+  (( $D > 0 )) && printf '%d days ' $D
+  (( $H > 0 )) && printf '%d hours ' $H
+  (( $M > 0 )) && printf '%d minutes ' $M
+  (( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+  printf '%d seconds\n' $S
+
+}
+
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.11.1" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.12" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -407,7 +439,8 @@ choice=$(whiptail --title "TheWrightServer Management Tool v3.11.1" --fb --menu 
     "8." "Backup" \
     "9." "Send Message" \
     "10." "Check for Failed Backups" \
-    "11." "Exit" 3>&1 1>&2 2>&3)
+    "11." "Check Last Backup" \
+    "12." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
     1.)
@@ -953,7 +986,14 @@ case $choice in
         done
     ;;
     11.)
+        # Last Backup Check
+        clear
+        for n in "${AllAllServers[@]}"; do
+        CheckLastBackup; done
+    ;;
+    12.)
         # Exit
         exit
     ;;
+
 esac
