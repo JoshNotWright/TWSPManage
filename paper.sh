@@ -380,7 +380,7 @@ function FailedBackupCheck {
         echo "Failed backup $FailedBackup removed, starting new backup attempt"
         Backup
      else
-        echo "There doesn't appear to be a failed backup on $FriendlyName"
+        echo "There doesn't appear to be any failed backups on $FriendlyName"
      fi
 }
 
@@ -395,7 +395,7 @@ function GetFriendlyName {
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.11" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.11.1 Alpha" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -945,21 +945,8 @@ case $choice in
     ;;
     10.)
         # Failed Backup Check
-        ServerCheck=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to check for failed backups?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" ON \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" ON \
-        "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" ON \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" ON \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" ON \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" ON \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" ON \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" ON \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" ON \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
-        3>&1 1>&2 2>&3)
-        ServerCheckArray=($ServerCheck)
         clear
-        for n in "${ServerCheckArray[@]}"
+        for n in "${AllAllServers[@]}"
         do
         FailedBackupCheck
         done
