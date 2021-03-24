@@ -337,7 +337,7 @@ function AnnounceDowntimeUpdate {
 }
 
 function BackupRemoveOldest {
-    # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first one
+    # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first (and therefore oldest) backup
     BackupToRemove=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -354,8 +354,8 @@ function BackupRemoveOldest {
     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
 
-function FailedBackupCheck {
-    GetFriendlyName
+function GetFailedBackup {
+    # Pulls the UUID of any backup(s) that has the key is_successful = false 
     FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -363,17 +363,49 @@ function FailedBackupCheck {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
      )
-     if [ ${#FailedBackup} -ge 36 ]; then
+}
+
+function DeleteFailedBackup {
+    GetFailedBackup
+    # This uses the first 36 characters of the FailedBackup list to ensure that only one is fed through at a time
+    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${FailedBackup:0:36}" > /dev/null \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X DELETE \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+}
+
+function HandleFailedBackup {
+    GetFriendlyName
+    GetFailedBackup
+    # If there's only one failed backup, we can just proceed like normal, just delete it and attempt a new one
+     if [ ${#FailedBackup} = 36 ]; then
         whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
-        clear
-        curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
-         -H 'Accept: application/json' \
-         -H 'Content-Type: application/json' \
-         -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-         -X DELETE \
-        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+        DeleteFailedBackup
         sleep 5
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
+        Backup
+    # If there's more than 36 characters in the string, then there's multiple failed backups, and we need to handle it differently
+     elif [ ${#FailedBackup} > 36 ]; then
+        whiptail --title "Warning" --msgbox "Found MULTIPLE failed backups on $FriendlyName" 8 78
+        # This loop deletes every failed backup except the last without attempting a new backup. Once the string is equal to 36 characters \
+        # you know you're on your last failed backup, so the loop breaks. 
+        while true; do
+            DeleteFailedBackup
+            sleep 5
+            echo "Failed Backup: ${FailedBackup:0:36} removed, checking if there are more failed backups before starting new attempt"
+            GetFailedBackup
+            if [ ${#FailedBackup} = 36 ]; then
+                break
+            else   
+                continue
+            fi
+        done
+        # Once the loop breaks, the user is notified that this is the last one, and then we attempt a new backup
+        DeleteFailedBackup
+        sleep 5
+        echo "Failed Backup: $FailedBackup removed, this is the last one, attempting new backup"
         Backup
      else
         echo "There doesn't appear to be any failed backups on $FriendlyName"
@@ -392,7 +424,9 @@ function GetFriendlyName {
 
 function CheckLastBackup {
     GetFriendlyName
+    # Pulls the current time
     Now=$(date)
+    # Pulls the last backups time using jq to filter down to the last 36 characters of the created_at list
     LastBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -400,14 +434,18 @@ function CheckLastBackup {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.completed_at'
      )
+     # Convert now to seconds
      SecondsNow=$(date -d"$Now" +%s)
+     # Convert lastbackup to seconds
      SecondsLastBackup=$(date -d"${LastBackup: -25}" +%s)
+     # Calculate the difference
      SecondsCalc=$((SecondsNow - SecondsLastBackup))
      TimeDifference=$(DisplayTime $SecondsCalc)
      echo "It has been $TimeDifference since $FriendlyName was last backed up"
 
 }
 
+# Converts seconds to time
 function DisplayTime {
   local T=$1
   local D=$((T/60/60/24))
@@ -445,7 +483,6 @@ function GetBackupCount {
 
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
-    "13." "Backup Limit Check Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -997,10 +1034,8 @@ case $choice in
     10.)
         # Failed Backup Check
         clear
-        for n in "${AllAllServers[@]}"
-        do
-        FailedBackupCheck
-        done
+        for n in "${AllAllServers[@]}";do
+        HandleFailedBackup;done
     ;;
     11.)
         # Last Backup Check
@@ -1011,11 +1046,5 @@ case $choice in
     12.)
         # Exit
         exit
-    ;;
-    13.)
-        # Backup Limit Check Test
-        clear
-        for n in "${SnapshotServers[@]}"; do
-        GetBackupLimit; done
-    ;;
+    ;; 
 esac
