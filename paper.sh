@@ -424,7 +424,9 @@ function GetFriendlyName {
 
 function CheckLastBackup {
     GetFriendlyName
+    # Pulls the current time
     Now=$(date)
+    # Pulls the last backups time using jq to filter down to the last 36 characters of the created_at list
     LastBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -432,14 +434,18 @@ function CheckLastBackup {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.completed_at'
      )
+     # Convert now to seconds
      SecondsNow=$(date -d"$Now" +%s)
+     # Convert lastbackup to seconds
      SecondsLastBackup=$(date -d"${LastBackup: -25}" +%s)
+     # Calculate the difference
      SecondsCalc=$((SecondsNow - SecondsLastBackup))
      TimeDifference=$(DisplayTime $SecondsCalc)
      echo "It has been $TimeDifference since $FriendlyName was last backed up"
 
 }
 
+# Converts seconds to time
 function DisplayTime {
   local T=$1
   local D=$((T/60/60/24))
