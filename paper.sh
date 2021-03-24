@@ -354,8 +354,7 @@ function BackupRemoveOldest {
     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
 
-function FailedBackupCheck {
-    GetFriendlyName
+function GetFailedBackup {
     FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -363,7 +362,12 @@ function FailedBackupCheck {
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
      )
-     if [ ${#FailedBackup} -ge 36 ]; then
+}
+
+function HandleFailedBackup {
+    GetFriendlyName
+    GetFailedBackup
+     if [ ${#FailedBackup} = 36 ]; then
         whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
         clear
         curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
@@ -375,6 +379,8 @@ function FailedBackupCheck {
         sleep 5
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
         Backup
+     elif [ ${#FailedBackup} > 36 ]; then
+        echo "There are multiple failed backups"
      else
         echo "There doesn't appear to be any failed backups on $FriendlyName"
      fi
@@ -999,7 +1005,7 @@ case $choice in
         clear
         for n in "${AllAllServers[@]}"
         do
-        FailedBackupCheck
+        HandleFailedBackup
         done
     ;;
     11.)
@@ -1013,9 +1019,18 @@ case $choice in
         exit
     ;;
     13.)
-        # Backup Limit Check Test
+        # Multi Failed Backup Test
         clear
-        for n in "${SnapshotServers[@]}"; do
-        GetBackupLimit; done
+        #for n in "${SnapshotServers[@]}"; do
+        n="699e30b5-e824-48a8-a0bc-41daf9e7f50e"
+        GetFailedBackup
+        echo $FailedBackup
+        if [[ ${#FailedBackup} = 36 ]]; then
+            echo "There is one failed backup here."
+        elif [[ ${#FailedBackup} > 36 ]]; then
+            echo "There are multiple failed backups here."
+        else
+            echo "No failed backups detected."
+        fi
     ;;
 esac
