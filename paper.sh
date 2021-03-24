@@ -379,9 +379,10 @@ function DeleteFailedBackup {
 function HandleFailedBackup {
     GetFriendlyName
     GetFailedBackup
-    # If there's only one failed backup, we can just proceed like normal, just delete it and attempt a new one
+    # If there's no failed backups, we don't have to do anything :D
      if [ ${#FailedBackup} = 0 ]; then
         echo "There doesn't appear to be any failed backups on $FriendlyName"
+    # If there's only one failed backup, we can just proceed like normal, just delete it and attempt a new one
      elif [ ${#FailedBackup} = 36 ]; then
         whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
         DeleteFailedBackup
