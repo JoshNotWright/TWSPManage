@@ -338,15 +338,15 @@ function AnnounceDowntimeUpdate {
 
 function BackupRemoveOldest {
     # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first (and therefore oldest) backup
-    BackupToRemove=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+    OldestBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.uuid'
      )
-    echo  Removing Backup: ${BackupToRemove:0:36}
-    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${BackupToRemove:0:36}" > /dev/null \
+    echo  Removing Backup: ${OldestBackup:0:36}
+    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${OldestBackup:0:36}" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
