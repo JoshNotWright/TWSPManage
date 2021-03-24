@@ -337,7 +337,7 @@ function AnnounceDowntimeUpdate {
 }
 
 function BackupRemoveOldest {
-    # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first one
+    # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first (and therefore oldest) backup
     BackupToRemove=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -355,6 +355,7 @@ function BackupRemoveOldest {
 }
 
 function GetFailedBackup {
+    # Pulls the UUID of any backup(s) that has the key is_successful = false 
     FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
@@ -364,23 +365,48 @@ function GetFailedBackup {
      )
 }
 
+function DeleteFailedBackup {
+    GetFailedBackup
+    # This uses the first 36 characters of the FailedBackup list to ensure that only one is fed through at a time
+    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${FailedBackup:0:36}" > /dev/null \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X DELETE \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+}
+
 function HandleFailedBackup {
     GetFriendlyName
     GetFailedBackup
+    # If there's only one failed backup, we can just proceed like normal, just delete it and attempt a new one
      if [ ${#FailedBackup} = 36 ]; then
         whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
-        clear
-        curl -s "http://thewrightserver.net/api/client/servers/$n/backups/$FailedBackup" > /dev/null \
-         -H 'Accept: application/json' \
-         -H 'Content-Type: application/json' \
-         -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-         -X DELETE \
-        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+        DeleteFailedBackup
         sleep 5
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
         Backup
+    # If there's more than 36 characters in the string, then there's multiple failed backups, and we need to handle it differently
      elif [ ${#FailedBackup} > 36 ]; then
-        echo "There are multiple failed backups"
+        whiptail --title "Warning" --msgbox "Found MULTIPLE failed backups on $FriendlyName" 8 78
+        # This loop deletes every failed backup except the last without attempting a new backup. Once the string is equal to 36 characters \
+        # you know you're on your last failed backup, so the loop breaks. 
+        while true; do
+            DeleteFailedBackup
+            sleep 5
+            echo "Failed Backup: ${FailedBackup:0:36} removed, checking if there are more failed backups before starting new attempt"
+            GetFailedBackup
+            if [ ${#FailedBackup} = 36 ]; then
+                break
+            else   
+                continue
+            fi
+        done
+        # Once the loop breaks, the user is notified that this is the last one, and then we attempt a new backup
+        DeleteFailedBackup
+        sleep 5
+        echo "Failed Backup: $FailedBackup removed, this is the last one, attempting new backup"
+        Backup
      else
         echo "There doesn't appear to be any failed backups on $FriendlyName"
      fi
@@ -1022,15 +1048,7 @@ case $choice in
         # Multi Failed Backup Test
         clear
         #for n in "${SnapshotServers[@]}"; do
-        n="699e30b5-e824-48a8-a0bc-41daf9e7f50e"
-        GetFailedBackup
-        echo $FailedBackup
-        if [[ ${#FailedBackup} = 36 ]]; then
-            echo "There is one failed backup here."
-        elif [[ ${#FailedBackup} > 36 ]]; then
-            echo "There are multiple failed backups here."
-        else
-            echo "No failed backups detected."
-        fi
-    ;;
+        n="29248816-96e7-4c20-ae88-5d8e90334f94"
+        HandleFailedBackup
+    ;; 
 esac
