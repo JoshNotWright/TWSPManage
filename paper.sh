@@ -483,7 +483,6 @@ function GetBackupCount {
 
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
-    "13." "Backup Limit Check Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -1035,10 +1034,8 @@ case $choice in
     10.)
         # Failed Backup Check
         clear
-        for n in "${AllAllServers[@]}"
-        do
-        HandleFailedBackup
-        done
+        for n in "${AllAllServers[@]}";do
+        HandleFailedBackup;done
     ;;
     11.)
         # Last Backup Check
@@ -1049,12 +1046,5 @@ case $choice in
     12.)
         # Exit
         exit
-    ;;
-    13.)
-        # Multi Failed Backup Test
-        clear
-        #for n in "${SnapshotServers[@]}"; do
-        n="941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2"
-        HandleFailedBackup
     ;; 
 esac
