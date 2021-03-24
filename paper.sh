@@ -438,10 +438,11 @@ function CheckLastBackup {
      SecondsNow=$(date -d"$Now" +%s)
      # Convert lastbackup to seconds
      SecondsLastBackup=$(date -d"${LastBackup: -25}" +%s 2> /dev/null)
+     # If the SecondsLastBackup string is empty, then the server is backing up
      if [ ${#SecondsLastBackup} = 0 ]; then
         echo "$FriendlyName is currently backing up"
      else
-        # Calculate the difference
+        # If not calculate and report the difference
         SecondsCalc=$((SecondsNow - SecondsLastBackup))
         TimeDifference=$(DisplayTime $SecondsCalc)
         echo "It has been $TimeDifference since $FriendlyName was last backed up"
