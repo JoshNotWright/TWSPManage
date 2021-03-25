@@ -386,8 +386,8 @@ function HandleFailedBackup {
      elif [ ${#FailedBackup} = 36 ]; then
         whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
         DeleteFailedBackup
-        sleep 5
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
+        sleep 2
         Backup
     # If there's more than 36 characters in the string, then there's multiple failed backups, and we need to handle it differently
      elif [ ${#FailedBackup} > 36 ]; then
@@ -396,8 +396,8 @@ function HandleFailedBackup {
         # you know you're on your last failed backup, so the loop breaks. 
         while true; do
             DeleteFailedBackup
-            sleep 5
             echo "Failed Backup: ${FailedBackup:0:36} removed, checking if there are more failed backups before starting new attempt"
+            sleep 1
             GetFailedBackup
             if [ ${#FailedBackup} = 36 ]; then
                 break
@@ -407,8 +407,8 @@ function HandleFailedBackup {
         done
         # Once the loop breaks, the user is notified that this is the last one, and then we attempt a new backup
         DeleteFailedBackup
-        sleep 5
         echo "Failed Backup: $FailedBackup removed, this is the last one, attempting new backup"
+        sleep 2
         Backup
      fi
 }
