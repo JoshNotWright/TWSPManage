@@ -497,6 +497,17 @@ function GetServerEgg {
      )
 }
 
+function GetMCWorld {
+    MCWorld=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/contents?file=server.properties" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | grep -w "level-name"
+     )
+    MCWorld=${MCWorld:11}
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
@@ -1064,9 +1075,9 @@ case $choice in
         # Exit
         exit
     ;; 
-    13.) # Test GetServerEgg
+    13.) # Test GetMCWorld
         clear
         for n in "${SnapshotServers[@]}"; do
-        GetServerEgg
-        echo "$ServerEgg";done
+        GetMCWorld
+        echo "$MCWorld";done
 esac
