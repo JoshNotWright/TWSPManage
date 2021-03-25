@@ -80,11 +80,6 @@ SnapshotServers=(
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
 )
 
-# List of Mindustry Servers
-MindustryServers=(
-    '5dfafc10-437a-4673-a0dc-57d978319355'
-)
-
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
     GetFriendlyName
@@ -556,8 +551,7 @@ case $choice in
         "1." "Paper Servers" OFF \
         "2." "Paper + Geyser Servers" OFF \
         "3." "Snapshot Server" OFF \
-        "4." "Mindustry Server" OFF \
-        "5." "All Servers" OFF 3>&1 1>&2 2>&3)
+        "4." "All Servers" OFF 3>&1 1>&2 2>&3)
         case $Update in
             1.)
                 # Paper Server Update
@@ -662,38 +656,6 @@ case $choice in
                 done
             ;;
             4.)
-                # Mindustry Server Update
-                clear
-                for n in "${MindustryServers[@]}"
-                do
-                AnnounceDowntimeUpdate
-                done
-                for i in {1..20}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 5 ))
-                echo "Please wait for the server installation to begin"
-                echo XXX
-                done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
-                clear
-                for n in "${MindustryServers[@]}"
-                do
-                ServerInstall
-                done
-                for i in {1..100}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 1 ))
-                echo "Please wait while the servers install"
-                echo XXX
-                done |whiptail --gauge "Please wait while the servers install" 6 60 0
-                clear
-                for n in "${MindustryServers[@]}"
-                do
-                ServerStart
-                done
-            ;;
-            5.)
                 # All Server Update
                 clear
                 for n in "${AllServers[@]}"
@@ -738,7 +700,6 @@ case $choice in
         Start=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to start?" --separate-output 20 78 4 \
         "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
         "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" OFF \
         "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
         "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
         "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
@@ -760,7 +721,6 @@ case $choice in
         Stop=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to stop?" --separate-output 20 78 4 \
         "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
         "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" OFF \
         "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
         "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
         "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
@@ -805,7 +765,6 @@ case $choice in
         Restart=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
         "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
         "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" OFF \
         "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
         "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
         "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
@@ -1036,7 +995,6 @@ case $choice in
             Backup=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
             "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
             "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-            "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" OFF \
             "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
             "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
             "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
@@ -1068,7 +1026,6 @@ case $choice in
         SendMessage=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
         "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" ON \
         "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" ON \
-        "5dfafc10-437a-4673-a0dc-57d978319355" "Mindustry" ON \
         "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" ON \
         "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" ON \
         "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" ON \
