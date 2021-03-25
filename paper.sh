@@ -525,7 +525,6 @@ function CheckLastUsed {
      SecondsLastUsed=$(date -d"$LastUsed" +%s 2> /dev/null)
      # If not calculate and report the difference
      SecondsCalc=$((SecondsNow - SecondsLastUsed))
-     echo $SecondsCalc
      if [ $SecondsCalc -gt 300 ]; then
         TimeDifference=$(DisplayTime $SecondsCalc)
         echo "It has been $TimeDifference since $FriendlyName was used"
@@ -1101,6 +1100,7 @@ case $choice in
         clear
         for n in "${AllAllServers[@]}"; do
         CheckLastUsed; done
+    ;;
     13.)
         # Exit
         exit
