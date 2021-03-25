@@ -486,6 +486,7 @@ function GetBackupCount {
      )
 }
 
+# Calls the server details list with egg parameter and filters it down to the egg name with JQ
 function GetServerEgg {
     ServerEgg=$( curl -s "http://thewrightserver.net/api/client/servers/$n?include=egg" \
      -H 'Accept: application/json' \
