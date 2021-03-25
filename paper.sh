@@ -486,6 +486,54 @@ function GetBackupCount {
      )
 }
 
+# Calls the server details list with egg parameter and filters it down to the egg name with JQ
+function GetServerEgg {
+    ServerEgg=$( curl -s "http://thewrightserver.net/api/client/servers/$n?include=egg" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.relationships' | jq -r '.egg' | jq -r '.attributes' | jq -r '.name'
+     )
+}
+
+function GetMCWorld {
+    MCWorld=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/contents?file=server.properties" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | grep -w "level-name"
+     )
+    MCWorld=${MCWorld:11}
+}
+
+function CheckLastUsed {
+    GetFriendlyName
+    GetMCWorld
+    Now=$(date)
+    LastUsed=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/list?directory=$MCWorld" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes | select(.name=="playerdata")' | jq -r '.modified_at'
+     )
+     # Convert now to seconds
+     SecondsNow=$(date -d"$Now" +%s)
+     # Convert LastUsed to seconds
+     SecondsLastUsed=$(date -d"$LastUsed" +%s 2> /dev/null)
+     # If not calculate and report the difference
+     SecondsCalc=$((SecondsNow - SecondsLastUsed))
+     echo $SecondsCalc
+     if [ $SecondsCalc -gt 300 ]; then
+        TimeDifference=$(DisplayTime $SecondsCalc)
+        echo "It has been $TimeDifference since $FriendlyName was used"
+     else
+        echo "$FriendlyName is currently in use"
+    fi
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -499,7 +547,8 @@ choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "S
     "9." "Send Message" \
     "10." "Check for Failed Backups" \
     "11." "Check Last Backup" \
-    "12." "Exit" 3>&1 1>&2 2>&3)
+    "12." "Check Last Used" \
+    "13." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
     1.)
@@ -1048,8 +1097,12 @@ case $choice in
         for n in "${AllAllServers[@]}"; do
         CheckLastBackup; done
     ;;
-    12.)
+    12.) # Last Used Check
+        clear
+        for n in "${AllAllServers[@]}"; do
+        CheckLastUsed; done
+    13.)
         # Exit
         exit
-    ;; 
+    ;;     
 esac
