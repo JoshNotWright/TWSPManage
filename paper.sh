@@ -40,7 +40,6 @@ AllServers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    '5dfafc10-437a-4673-a0dc-57d978319355'
 )
 
 # List of Servers for the ALL Power / ALL Restart functions
@@ -49,7 +48,6 @@ AllAllServers=(
     '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '5dfafc10-437a-4673-a0dc-57d978319355'
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
     '29248816-96e7-4c20-ae88-5d8e90334f94'
     '2efe6e55-8b98-4cba-942a-564d584623ae'
@@ -61,7 +59,6 @@ AllAllServers=(
 Node1Servers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
     'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '5dfafc10-437a-4673-a0dc-57d978319355'
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
 )
 
