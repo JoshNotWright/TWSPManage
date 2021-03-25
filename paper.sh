@@ -536,7 +536,6 @@ function CheckLastUsed {
 
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
-    "13." "Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -548,7 +547,8 @@ choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "S
     "9." "Send Message" \
     "10." "Check for Failed Backups" \
     "11." "Check Last Backup" \
-    "12." "Exit" 3>&1 1>&2 2>&3)
+    "12." "Check Last Used" \
+    "13." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
     1.)
@@ -1097,12 +1097,12 @@ case $choice in
         for n in "${AllAllServers[@]}"; do
         CheckLastBackup; done
     ;;
-    12.)
-        # Exit
-        exit
-    ;; 
-    13.) # Test GetMCWorld
+    12.) # Last Used Check
         clear
         for n in "${AllAllServers[@]}"; do
         CheckLastUsed; done
+    13.)
+        # Exit
+        exit
+    ;;     
 esac
