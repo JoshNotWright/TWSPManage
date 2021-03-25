@@ -461,7 +461,7 @@ function GetServerStatus {
     GetLastUsed
     LastUsedDifference=$(DisplayTime $LastUsed)
     LastBackupDifference=$(DisplayTime $LastBackup)
-    if [ ${#LastBackup} = 0 ]; then
+    if [ ${#LastBackupString} = 0 ]; then
         if [ $LastUsed -gt 300 ]; then
             echo "$FriendlyName was last used $LastUsedDifference ago and is currently backing up"
         else
@@ -471,7 +471,7 @@ function GetServerStatus {
         if [ $LastUsed -gt 300 ]; then
             echo "$FriendlyName was last used $LastUsedDifference ago and was last backed up $LastBackupDifference ago"
         else
-            echo "$Friendly is currently being used and was last backed up $LastBackupDifference ago"
+            echo "$FriendlyName is currently being used and was last backed up $LastBackupDifference ago"
         fi
     fi
 }
