@@ -1019,7 +1019,7 @@ case $choice in
             do
             Backup
             done
-            echo "All servers have been backed up successfully"
+            echo "Selected servers have been backed up successfully"
         else
             clear
             exit
