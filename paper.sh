@@ -415,8 +415,7 @@ function GetFriendlyName {
     )
 }
 
-function CheckLastBackup {
-    GetFriendlyName
+function GetLastBackup {
     # Pulls the current time
     Now=$(date)
     # Pulls the last backups time using jq to filter down to the last 36 characters of the created_at list
@@ -430,15 +429,50 @@ function CheckLastBackup {
      # Convert now to seconds
      SecondsNow=$(date -d"$Now" +%s)
      # Convert lastbackup to seconds
-     SecondsLastBackup=$(date -d"${LastBackup: -25}" +%s 2> /dev/null)
-     # If the SecondsLastBackup string is empty, then the server is backing up
-     if [ ${#SecondsLastBackup} = 0 ]; then
-        echo "$FriendlyName is currently backing up"
-     else
-        # If not calculate and report the difference
-        SecondsCalc=$((SecondsNow - SecondsLastBackup))
-        TimeDifference=$(DisplayTime $SecondsCalc)
-        echo "It has been $TimeDifference since $FriendlyName was last backed up"
+     LastBackup=$(date -d"${LastBackup: -25}" +%s 2> /dev/null)
+     LastBackupString=$LastBackup
+     LastBackup=$((SecondsNow - LastBackup))
+
+        
+}
+
+function GetLastUsed {
+    GetFriendlyName
+    GetMCWorld
+    Now=$(date)
+    LastUsed=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/list?directory=$MCWorld" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes | select(.name=="playerdata")' | jq -r '.modified_at'
+     )
+     # Convert now to seconds
+     SecondsNow=$(date -d"$Now" +%s)
+     # Convert LastUsed to seconds
+     SecondsLastUsed=$(date -d"$LastUsed" +%s 2> /dev/null)
+     # Calculate and store the difference
+     LastUsed=$((SecondsNow - SecondsLastUsed))
+}
+
+function GetServerStatus {
+    GetFriendlyName
+    GetLastBackup
+    GetLastUsed
+    LastUsedDifference=$(DisplayTime $LastUsed)
+    LastBackupDifference=$(DisplayTime $LastBackup)
+    if [ ${#LastBackup} = 0 ]; then
+        if [ $LastUsed -gt 300 ]; then
+            echo "$FriendlyName was last used $LastUsedDifference ago and is currently backing up"
+        else
+            echo "$FriendlyName is currently being used and is currently backing up"
+        fi
+    else
+        if [ $LastUsed -gt 300 ]; then
+            echo "$FriendlyName was last used $LastUsedDifference ago and was last backed up $LastBackupDifference ago"
+        else
+            echo "$Friendly is currently being used and was last backed up $LastBackupDifference ago"
+        fi
     fi
 }
 
@@ -500,31 +534,6 @@ function GetMCWorld {
     MCWorld=${MCWorld:11}
 }
 
-function CheckLastUsed {
-    GetFriendlyName
-    GetMCWorld
-    Now=$(date)
-    LastUsed=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/list?directory=$MCWorld" \
-     -H 'Accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
-     -X GET \
-     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes | select(.name=="playerdata")' | jq -r '.modified_at'
-     )
-     # Convert now to seconds
-     SecondsNow=$(date -d"$Now" +%s)
-     # Convert LastUsed to seconds
-     SecondsLastUsed=$(date -d"$LastUsed" +%s 2> /dev/null)
-     # If not calculate and report the difference
-     SecondsCalc=$((SecondsNow - SecondsLastUsed))
-     if [ $SecondsCalc -gt 300 ]; then
-        TimeDifference=$(DisplayTime $SecondsCalc)
-        echo "It has been $TimeDifference since $FriendlyName was used"
-     else
-        echo "$FriendlyName is currently in use"
-    fi
-}
-
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -537,9 +546,8 @@ choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "S
     "8." "Backup" \
     "9." "Send Message" \
     "10." "Check for Failed Backups" \
-    "11." "Check Last Backup" \
-    "12." "Check Last Used" \
-    "13." "Exit" 3>&1 1>&2 2>&3)
+    "11." "Check Server Status" \
+    "12." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
     1.)
@@ -1045,17 +1053,12 @@ case $choice in
         HandleFailedBackup;done
     ;;
     11.)
-        # Last Backup Check
+        # Server Status
         clear
         for n in "${AllAllServers[@]}"; do
-        CheckLastBackup; done
+        GetServerStatus; done
     ;;
-    12.) # Last Used Check
-        clear
-        for n in "${AllAllServers[@]}"; do
-        CheckLastUsed; done
-    ;;
-    13.)
+    12.)
         # Exit
         exit
     ;;     
