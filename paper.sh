@@ -1,20 +1,11 @@
 #!/bin/ash
 # Server Management Tool for TheWrightServer
 # Todo
-# - Auto delete backups if they're old. Backup func (first set every server to have the same limit i.e 10): List backups -> if backup count = backup limit then delete the oldest
-# - It might be possible to use whiptail to poll backup status... even though the process would take forever, it would be possible to do. On that note, a backup all feature is kinda pointless. Much easier to have just a checklist because server activity varies
 # - Cancel in sub menu take you back to menu
-# - BackupCheckFunction API Call Server Information, Parse disk usage, scale time inbetween backups based on the size
 # - Ask if user wants to update all before stopping servers
 # - Dockerize
-# - We can absolutely use JQ and API list backups to check if a backup has failed to retry. If we wanted to implement a more involved backup system, that is
 # - Add GUI to the new backup functions
 # - Change Start/Restart/Stop All to a checklist instead of a radio list
-# - Check for failed backups menu option
-# for n in "${AllAllServers[@]}"; do
-# FailedBackupCheck; done
-# function FailedBackupCheck
-# - We need a failed backup to see if the JSON shows us the failed backup
 
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
