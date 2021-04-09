@@ -7,6 +7,8 @@
 # - Add GUI to the new backup functions
 # - Change Start/Restart/Stop All to a checklist instead of a radio list
 
+HOST=$(jq -r '.host' config.json)
+APIKEY=$(jq -r '.apikey' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
@@ -71,10 +73,10 @@ SnapshotServers=(
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
     GetFriendlyName
-    curl -s "http://thewrightserver.net/api/client/servers/$n/settings/reinstall" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/settings/reinstall" > /dev/null \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+  -H 'Authorization: Bearer '$APIKEY'' \
   -X POST \
   -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
     msgs=( "Updating $FriendlyName." "Updating $FriendlyName.." "Updating $FriendlyName..." "$FriendlyName is now updating!" "Done" )
@@ -90,10 +92,10 @@ function ServerInstall {
 # API call to request server start and then wait 10 seconds
 function ServerStart {
     GetFriendlyName
-    curl "http://thewrightserver.net/api/client/servers/$n/power" \
+    curl "$HOST/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -H 'Authorization: Bearer '$APIKEY'' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
         -d '{
@@ -112,10 +114,10 @@ function ServerStart {
 # API call to request server stop and wait 10 seconds
 function ServerStop {
     GetFriendlyName
-    curl "http://thewrightserver.net/api/client/servers/$n/power" \
+    curl "$HOST/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -H 'Authorization: Bearer '$APIKEY'' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
         -d '{
@@ -134,10 +136,10 @@ function ServerStop {
 # API call to request server restart and wait 10 seconds
 function ServerRestart {
     GetFriendlyName
-    curl "http://thewrightserver.net/api/client/servers/$n/power" \
+    curl "$HOST/api/client/servers/$n/power" \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -H 'Authorization: Bearer '$APIKEY'' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
         -d '{
@@ -161,10 +163,10 @@ function Backup {
      if [[ "$BackupCount" -eq "$BackupLimit" ]]; then
         echo "Reached backup limit on $FriendlyName, removing oldest"
         BackupRemoveOldest
-        curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
+        curl -s "$HOST/api/client/servers/$n/backups" > /dev/null \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -H 'Authorization: Bearer '$APIKEY'' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
         msgs=( "Backing up $FriendlyName." "Backing up $FriendlyName.." "Backing up $FriendlyName..." "$FriendlyName is backing up!" "Done" )
@@ -176,10 +178,10 @@ function Backup {
             echo XXX
             done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
     else
-        curl -s "http://thewrightserver.net/api/client/servers/$n/backups" > /dev/null \
+        curl -s "$HOST/api/client/servers/$n/backups" > /dev/null \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+        -H 'Authorization: Bearer '$APIKEY'' \
         -X POST \
         -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
         msgs=( "Backing up $FriendlyName." "Backing up $FriendlyName.." "Backing up $FriendlyName..." "$FriendlyName is backing up!" "Done" )
@@ -208,10 +210,10 @@ function SnapshotVariableChange {
      done |whiptail --gauge "Please wait while the server variables update" 6 60 0
      if [ "$LATEST_VERSION" == "$LATEST_RELEASE" ]; then
      echo "There is not currently a snapshot build. Whitelisting the server"
-     curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+     curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -219,10 +221,10 @@ function SnapshotVariableChange {
       "value": "true"
     }'
 
-    curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -230,10 +232,10 @@ function SnapshotVariableChange {
       "value": "CLOSED // NO SNAPSHOT"
     }'
 
-    curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -242,10 +244,10 @@ function SnapshotVariableChange {
     }'
 
     else
-    curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -253,10 +255,10 @@ function SnapshotVariableChange {
       "value": "false"
     }'
 
-    curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -264,10 +266,10 @@ function SnapshotVariableChange {
       "value": "'"$LATEST_VERSION"'"
     }'
 
-    curl -s "http://thewrightserver.net/api/client/servers/$n/startup/variable" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/startup/variable" > /dev/null \
       -H 'Accept: application/json' \
       -H 'Content-Type: application/json' \
-      -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+      -H 'Authorization: Bearer '$APIKEY'' \
       -X PUT \
       -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
       -d '{
@@ -280,10 +282,10 @@ function SnapshotVariableChange {
 # API call that sends a message on the server and waits 5 seconds
 function AnnounceMessage {
     GetFriendlyName
-   curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
+   curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY' ' \
      -X POST \
      -d '{
      "command": "say '"$ANNOUNCE_MESSAGE"'"
@@ -301,10 +303,10 @@ function AnnounceMessage {
 # API call that sends a message to announce when it's updating and waits 5 seconds
 function AnnounceDowntimeUpdate {
     GetFriendlyName
-   curl -s "http://thewrightserver.net/api/client/servers/$n/command" > /dev/null \
+   curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X POST \
      -d '{
      "command": "say This server is going down momentarily to update. This process is automated, and is expected to take around 5 minutes to complete."
@@ -321,28 +323,28 @@ function AnnounceDowntimeUpdate {
 
 function BackupRemoveOldest {
     # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first (and therefore oldest) backup
-    OldestBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+    OldestBackup=$( curl -s "$HOST/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.uuid'
      )
     echo  Removing Backup: ${OldestBackup:0:36}
-    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${OldestBackup:0:36}" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/backups/${OldestBackup:0:36}" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X DELETE \
     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
 
 function GetFailedBackup {
     # Pulls the UUID of any backup(s) that has the key is_successful = false 
-    FailedBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+    FailedBackup=$( curl -s "$HOST/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r ".data[].attributes | select((.uuid) and .is_successful=="false")" | jq -r '.uuid'
      )
@@ -351,10 +353,10 @@ function GetFailedBackup {
 function DeleteFailedBackup {
     GetFailedBackup
     # This uses the first 36 characters of the FailedBackup list to ensure that only one is fed through at a time
-    curl -s "http://thewrightserver.net/api/client/servers/$n/backups/${FailedBackup:0:36}" > /dev/null \
+    curl -s "$HOST/api/client/servers/$n/backups/${FailedBackup:0:36}" > /dev/null \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X DELETE \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
 }
@@ -397,10 +399,10 @@ function HandleFailedBackup {
 }
 
 function GetFriendlyName {
-     FriendlyName=$( curl -s "http://thewrightserver.net/api/client/servers/$n" \
+     FriendlyName=$( curl -s "$HOST/api/client/servers/$n" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.name'
     )
@@ -410,10 +412,10 @@ function GetLastBackup {
     # Pulls the current time
     Now=$(date)
     # Pulls the last backups time using jq to filter down to the last 36 characters of the created_at list
-    LastBackup=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+    LastBackup=$( curl -s "$HOST/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.completed_at'
      )
@@ -431,10 +433,10 @@ function GetLastUsed {
     GetFriendlyName
     GetMCWorld
     Now=$(date)
-    LastUsed=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/list?directory=$MCWorld" \
+    LastUsed=$( curl -s "$HOST/api/client/servers/$n/files/list?directory=$MCWorld" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes | select(.name=="playerdata")' | jq -r '.modified_at'
      )
@@ -483,10 +485,10 @@ function DisplayTime {
 }
 
 function GetBackupLimit {
-    BackupLimit=$( curl -s "http://thewrightserver.net/api/client/servers/$n/" \
+    BackupLimit=$( curl -s "$HOST/api/client/servers/$n/" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.feature_limits' | jq -r '.backups'
      )
@@ -494,10 +496,10 @@ function GetBackupLimit {
 
 # API GET List Backups and use JQ to pull object total to set that as BackupCount
 function GetBackupCount {
-     BackupCount=$( curl -s "http://thewrightserver.net/api/client/servers/$n/backups" \
+     BackupCount=$( curl -s "$HOST/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.meta' | jq -r '.pagination' | jq -r '.total' 
      )
@@ -505,20 +507,20 @@ function GetBackupCount {
 
 # Calls the server details list with egg parameter and filters it down to the egg name with JQ
 function GetServerEgg {
-    ServerEgg=$( curl -s "http://thewrightserver.net/api/client/servers/$n?include=egg" \
+    ServerEgg=$( curl -s "$HOST/api/client/servers/$n?include=egg" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.relationships' | jq -r '.egg' | jq -r '.attributes' | jq -r '.name'
      )
 }
 
 function GetMCWorld {
-    MCWorld=$( curl -s "http://thewrightserver.net/api/client/servers/$n/files/contents?file=server.properties" \
+    MCWorld=$( curl -s "$HOST/api/client/servers/$n/files/contents?file=server.properties" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer yKtgTxRyfD0UD84TAQlaRvoHTTpGJXi8CopZN2FIiDeBh481' \
+     -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | grep -w "level-name"
      )
