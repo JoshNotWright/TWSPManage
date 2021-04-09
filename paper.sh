@@ -462,7 +462,7 @@ function GetServerStatus {
         fi
     else
         if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName was last used $LastUsedDifference ago and was last backed up $LastBackupDifference ago"
+            echo "$FriendlyName was last used $LastUsedDifference ago and last backed up $LastBackupDifference ago"
         else
             echo "$FriendlyName is currently being used and was last backed up $LastBackupDifference ago"
         fi
