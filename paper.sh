@@ -527,6 +527,10 @@ function GetMCWorld {
     MCWorld=${MCWorld:11}
 }
 
+function DowntimePrompt {
+    whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" --defaultno 8 78 
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -729,7 +733,7 @@ case $choice in
         3>&1 1>&2 2>&3)
         StopArray=($Stop)
         clear
-        if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+        if DowntimePrompt; then
             clear
             ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
             for n in "${StopArray[@]}"
@@ -773,7 +777,7 @@ case $choice in
         3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
-        if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+        if DowntimePrompt; then
             clear
             ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
             for n in "${RestartArray[@]}"
@@ -845,7 +849,7 @@ case $choice in
                 1.)
                     # Node 1 Stop All
                     clear
-                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                    if DowntimePrompt; then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
                         echo "Stopping all servers on Node 1..."
@@ -875,7 +879,7 @@ case $choice in
                 2.)
                     # Node 2 Stop All
                     clear
-                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                    if DowntimePrompt; then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
                         echo "Stopping all servers on Node 2..."
@@ -922,7 +926,7 @@ case $choice in
                 1.)
                     # Node 1 Restart All
                     clear
-                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                    if DowntimePrompt; then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
                         echo "Restarting all servers on Node 1..."
@@ -952,7 +956,7 @@ case $choice in
                 2.)
                     # Node 2 Restart All
                     clear
-                    if (whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" 8 78); then
+                    if DowntimePrompt; then
                         clear
                         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
                         echo "Restarting all servers on Node 2..."
