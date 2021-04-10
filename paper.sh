@@ -533,6 +533,30 @@ function DowntimePrompt {
     whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" --defaultno 8 78 
 }
 
+function CheckServerInstallStatus {
+    InstallStatus=$( curl -s "$HOST/api/client/servers/$n" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.is_installing'
+     )
+}
+
+function ServerInstallWait {
+    for i in {1..100}; do
+                CheckServerInstallStatus
+                if [ $InstallStatus == "false" ]; then
+                    break
+                fi
+                sleep 1
+                echo XXX
+                echo $(( i * 1 ))
+                echo "Please wait while the servers install"
+                echo XXX
+        done |whiptail --gauge "Please wait while the servers install" 6 60 0
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -577,13 +601,7 @@ case $choice in
                 do
                 ServerInstall     
                 done
-                for i in {1..100}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 1 ))
-                echo "Please wait while the servers install"
-                echo XXX
-                done |whiptail --gauge "Please wait while the servers install" 6 60 0
+                ServerInstallWait
                 clear
                 for n in "${PaperServers[@]}"
                 do
@@ -610,13 +628,7 @@ case $choice in
                 do
                 ServerInstall
                 done
-                for i in {1..100}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 1 ))
-                echo "Please wait while the servers install"
-                echo XXX
-                done |whiptail --gauge "Please wait while the servers install" 6 60 0
+                ServerInstallWait
                 clear
                 for n in "${PaperGeyserServers[@]}"
                 do
@@ -646,13 +658,7 @@ case $choice in
                 do
                 ServerInstall
                 done
-                for i in {1..100}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 1 ))
-                echo "Please wait while the servers install"
-                echo XXX
-                done |whiptail --gauge "Please wait while the servers install" 6 60 0
+                ServerInstallWait
                 clear
                 for n in "${SnapshotServers[@]}"
                 do
@@ -683,13 +689,7 @@ case $choice in
                 do
                 ServerInstall
                 done
-                for i in {1..100}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 1 ))
-                echo "Please wait while the servers install"
-                echo XXX
-                done |whiptail --gauge "Please wait while the servers install" 6 60 0
+                ServerInstallWait
                 clear
                 for n in "${AllServers[@]}"
                 do
