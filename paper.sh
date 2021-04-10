@@ -200,7 +200,7 @@ function SnapshotVariableChange {
      LATEST_VERSION=`curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.snapshot'` > /dev/null
      LATEST_RELEASE=`curl -s https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.latest.release'` > /dev/null
      clear
-     msgs=( "Updating variables." "Updating variables on.." "Updating variables on ..." "Variables updated" "Done" )
+     msgs=( "Updating variables." "Updating variables.." "Updating variables..." "Variables updated" "Done" )
      for i in {1..5}; do
      sleep 2
      echo XXX
@@ -544,21 +544,21 @@ function CheckServerInstallStatus {
 }
 
 function ServerInstallWait {
-    for i in {1..100}; do
+    for i in {1..50}; do
                 CheckServerInstallStatus
                 if [ $InstallStatus == "false" ]; then
                     break
                 fi
-                sleep 1
+                sleep 1.5
                 echo XXX
-                echo $(( i * 1 ))
+                echo $(( i * 2 ))
                 echo "Please wait while the servers install"
                 echo XXX
         done |whiptail --gauge "Please wait while the servers install" 6 60 0
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.13" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.14" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
