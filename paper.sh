@@ -752,6 +752,7 @@ case $choice in
             do
             ServerStop
             done
+            clear
             echo "Selected servers have been stopped successfully"
         else
             clear
@@ -765,6 +766,7 @@ case $choice in
             do
             ServerStop
             done
+            clear
             echo "Selected servers have been stopped successfully"
         fi
     ;;
@@ -796,6 +798,7 @@ case $choice in
             do
             ServerRestart
             done
+            clear
             echo "Selected servers have been restarted successfully"
         else
             clear
@@ -809,6 +812,7 @@ case $choice in
             do
             ServerRestart
             done
+            clear
             echo "Selected servers have been restarted successfully"
         fi
     ;;
@@ -830,7 +834,12 @@ case $choice in
                     do
                     ServerStart
                     done
-                    echo "All servers have been started on Node 1"
+                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been started on Node 1"
+                        fi
                 ;;
                 2.)
                     # Node 2 Start All
@@ -840,7 +849,13 @@ case $choice in
                     do
                     ServerStart
                     done
-                    echo "All servers have been started on Node 2"
+                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been started on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been started on Node 2"
+                        fi
                 ;;
             esac
         done
@@ -872,7 +887,12 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 1"
+                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been stopped on Node 1"
+                        fi
                     ;;
                     2.)
                         # Node 2 Stop All
@@ -886,7 +906,13 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 2"
+                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been stopped on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been stopped on Node 2"
+                        fi
                     ;;
                 esac
             done
@@ -923,7 +949,12 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 1"
+                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been restarted on Node 1"
+                        fi
                     ;;
                     2.)
                         # Node 2 Restart All
@@ -937,7 +968,13 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 2"
+                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been restarted on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been restarted on Node 2"
+                        fi
                     ;;
                 esac
             done
@@ -973,6 +1010,7 @@ case $choice in
             do
             Backup
             done
+            clear
             echo "Selected servers have been backed up successfully"
         else
             clear
