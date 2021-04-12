@@ -533,6 +533,10 @@ function DowntimePrompt {
     whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" --defaultno 8 78 
 }
 
+function DowntimeMessageInput {
+    ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
+}
+
 function CheckServerInstallStatus {
     InstallStatus=$( curl -s "$HOST/api/client/servers/$n" \
      -H 'Accept: application/json' \
@@ -748,6 +752,7 @@ case $choice in
             do
             ServerStop
             done
+            clear
             echo "Selected servers have been stopped successfully"
         else
             clear
@@ -761,6 +766,7 @@ case $choice in
             do
             ServerStop
             done
+            clear
             echo "Selected servers have been stopped successfully"
         fi
     ;;
@@ -792,6 +798,7 @@ case $choice in
             do
             ServerRestart
             done
+            clear
             echo "Selected servers have been restarted successfully"
         else
             clear
@@ -805,66 +812,71 @@ case $choice in
             do
             ServerRestart
             done
+            clear
             echo "Selected servers have been restarted successfully"
         fi
     ;;
     5.)
         # Start All
         clear
-        NodeStart=$(whiptail --title "TheWrightServer" --radiolist "Which node would you like to start?" --separate-output 20 78 4 \
+        NodeStart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to start?" --separate-output 20 78 4 \
         "1." "Node 1" OFF \
         "2." "Node 2" OFF \
         3>&1 1>&2 2>&3)
-        case $NodeStart in
-            1.)
-                # Node 1 Start All
-                clear
-                echo "Starting all servers on Node 1..."
-                for n in "${Node1Servers[@]}"
-                do
-                ServerStart
-                done
-                echo "All servers have been started on Node 1"
-            ;;
-            2.)
-                # Node 2 Start All
-                clear
-                echo "Starting all servers on Node 2..."
-                for n in "${Node2Servers[@]}"
-                do
-                ServerStart
-                done
-                echo "All servers have been started on Node 2"
-            ;;
-        esac
+        NodeStartArray=($NodeStart)
+        for NodeStart in "${NodeStartArray[@]}"; do
+            case $NodeStart in
+                1.)
+                    # Node 1 Start All
+                    clear
+                    echo "Starting all servers on Node 1..."
+                    for n in "${Node1Servers[@]}"
+                    do
+                    ServerStart
+                    done
+                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been started on Node 1"
+                        fi
+                ;;
+                2.)
+                    # Node 2 Start All
+                    clear
+                    echo "Starting all servers on Node 2..."
+                    for n in "${Node2Servers[@]}"
+                    do
+                    ServerStart
+                    done
+                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been started on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been started on Node 2"
+                        fi
+                ;;
+            esac
+        done
     ;;
     6.)
         # Stop All
         clear
         passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
         if [ $PASS == $passinput ]; then
-            NodeStop=$(whiptail --title "TheWrightServer" --radiolist "Which node would you like to stop?" --separate-output 20 78 4 \
+            NodeStop=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
             "1." "Node 1" OFF \
             "2." "Node 2" OFF \
             3>&1 1>&2 2>&3)
-            case $NodeStop in
-                1.)
-                    # Node 1 Stop All
-                    clear
-                    if DowntimePrompt; then
-                        clear
-                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Stopping all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node1Servers[@]}"
-                        do
-                        ServerStop
-                        done
-                        echo "All servers have been stopped on Node 1"
-                    else
+            NodeStopArray=($NodeStop)
+            if DowntimePrompt; then
+                DowntimeMessageInput
+            fi
+            for NodeStop in "${NodeStopArray[@]}"; do
+                case $NodeStop in
+                    1.)
+                        # Node 1 Stop All
                         clear
                         echo "Stopping all servers on Node 1..."
                         for n in "${Node1Servers[@]}"
@@ -875,26 +887,15 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 1"
-                    fi
-                ;;
-                2.)
-                    # Node 2 Stop All
-                    clear
-                    if DowntimePrompt; then
-                        clear
-                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Stopping all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node2Servers[@]}"
-                        do
-                        ServerStop
-                        done
-                        echo "All servers have been stopped on Node 2"
-                    else
+                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been stopped on Node 1"
+                        fi
+                    ;;
+                    2.)
+                        # Node 2 Stop All
                         clear
                         echo "Stopping all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
@@ -905,10 +906,16 @@ case $choice in
                         do
                         ServerStop
                         done
-                        echo "All servers have been stopped on Node 2"
-                    fi
-                ;;
-            esac
+                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been stopped on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been stopped on Node 2"
+                        fi
+                    ;;
+                esac
+            done
         else
             clear
             echo "Incorrect admin password."
@@ -920,28 +927,18 @@ case $choice in
         clear
         passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
         if [ $PASS == $passinput ]; then
-            NodeRestart=$(whiptail --title "TheWrightServer" --radiolist "Which node would you like to restart?" --separate-output 20 78 4 \
+            NodeRestart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
             "1." "Node 1" OFF \
             "2." "Node 2" OFF \
             3>&1 1>&2 2>&3)
-            case $NodeRestart in
-                1.)
-                    # Node 1 Restart All
-                    clear
-                    if DowntimePrompt; then
-                        clear
-                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Restarting all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node1Servers[@]}"
-                        do
-                        ServerRestart
-                        done
-                        echo "All servers have been restarted on Node 1"
-                    else
+            NodeRestartArray=($NodeRestart)
+            if DowntimePrompt; then
+                DowntimeMessageInput
+            fi
+            for NodeRestart in "${NodeRestartArray[@]}"; do
+                case $NodeRestart in
+                    1.)
+                        # Node 1 Restart All
                         clear
                         echo "Restarting all servers on Node 1..."
                         for n in "${Node1Servers[@]}"
@@ -952,26 +949,15 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 1"
-                    fi
-                ;;
-                2.)
-                    # Node 2 Restart All
-                    clear
-                    if DowntimePrompt; then
-                        clear
-                        ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-                        echo "Restarting all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node2Servers[@]}"
-                        do
-                        ServerRestart
-                        done
-                        echo "All servers have been restarted on Node 2"
-                    else
+                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                            :
+                        else
+                            clear
+                            echo "All servers have been restarted on Node 1"
+                        fi
+                    ;;
+                    2.)
+                        # Node 2 Restart All
                         clear
                         echo "Restarting all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
@@ -982,10 +968,16 @@ case $choice in
                         do
                         ServerRestart
                         done
-                        echo "All servers have been restarted on Node 2"
-                    fi
-                ;;
-            esac
+                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                            clear
+                            echo "All servers have been restarted on selected nodes"
+                        else
+                            clear
+                            echo "All servers have been restarted on Node 2"
+                        fi
+                    ;;
+                esac
+            done
         else
             clear
             echo "Incorrect admin password."
@@ -1018,6 +1010,7 @@ case $choice in
             do
             Backup
             done
+            clear
             echo "Selected servers have been backed up successfully"
         else
             clear
