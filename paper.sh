@@ -448,23 +448,36 @@ function GetLastUsed {
      LastUsed=$((SecondsNow - SecondsLastUsed))
 }
 
+function GetLastPlayerUsed {
+    GetFriendlyName
+    LastPlayerUsed=$( curl -s "$HOST/api/client/servers/$n/files/contents?file=%2Fusercache.json" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.[0].name'
+     )
+    
+}
+
 function GetServerStatus {
     GetFriendlyName
     GetLastBackup
     GetLastUsed
+    GetLastPlayerUsed
     LastUsedDifference=$(DisplayTime $LastUsed)
     LastBackupDifference=$(DisplayTime $LastBackup)
     if [ ${#LastBackupString} = 0 ]; then
         if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName was last used $LastUsedDifference ago and is currently backing up"
+            echo "$FriendlyName | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Backup In Progress"
         else
-            echo "$FriendlyName is currently being used and is currently backing up"
+            echo "$FriendlyName | In Use | Current Player: $LastPlayerUsed | Backup In Progress"
         fi
     else
         if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName was last used $LastUsedDifference ago and last backed up $LastBackupDifference ago"
+            echo "$FriendlyName | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
         else
-            echo "$FriendlyName is currently being used and was last backed up $LastBackupDifference ago"
+            echo "$FriendlyName | In Use | Current Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
         fi
     fi
 }
