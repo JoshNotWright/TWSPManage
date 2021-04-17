@@ -374,6 +374,24 @@ function HandleFailedBackup {
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
         sleep 2
         Backup
+        BEGIN=$(date +%s)
+        BACK="\b\b\b\b"
+        # This loop checks if the backup has completed before moving on to the next server to check. This helps ensure that it doesn't fail again
+        # It also includes a stopwatch to show how long the current process has been running
+        while true; do
+            NOW=$(date +%s)
+            let DIFF=$(($NOW - $BEGIN))
+            let MINS=$(($DIFF / 60))
+            let SECS=$(($DIFF % 60))
+            GetBackupStatus
+            if [ "$BackupStatus" = "null" ]; then
+            echo -ne "Please wait while $FriendlyName backs up. Time Elapsed: $MINS:`printf %02d $SECS`"\\r
+            else
+            echo -ne "$FriendlyName has completed it's backup in $(DisplayTime $DIFF)"\\n
+            sleep 1
+            break
+            fi
+        done
     # If there's more than 36 characters in the string, then there's multiple failed backups, and we need to handle it differently
      elif [ ${#FailedBackup} > 36 ]; then
         whiptail --title "Warning" --msgbox "Found MULTIPLE failed backups on $FriendlyName" 8 78
@@ -395,7 +413,49 @@ function HandleFailedBackup {
         echo "Failed Backup: $FailedBackup removed, this is the last one, attempting new backup"
         sleep 2
         Backup
+        BEGIN=$(date +%s)
+        BACK="\b\b\b\b"
+        # This loop checks if the backup has completed before moving on to the next server to check. This helps ensure that it doesn't fail again
+        # It also includes a stopwatch to show how long the current process has been running
+        while true; do
+            NOW=$(date +%s)
+            let DIFF=$(($NOW - $BEGIN))
+            let MINS=$(($DIFF / 60))
+            let SECS=$(($DIFF % 60))
+            GetBackupStatus
+            if [ "$BackupStatus" = "null" ]; then
+            echo -ne "Please wait while $FriendlyName backs up. Time Elapsed: $MINS:`printf %02d $SECS`"\\r
+            else
+            echo -ne "$FriendlyName has completed it's backup in $(DisplayTime $DIFF)"\\n
+            sleep 1
+            break
+            fi
+        done
      fi
+}
+
+function GetLatestBackupUUID {
+    LatestBackupUUID=$( curl -s "$HOST/api/client/servers/$n/backups" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.uuid'
+     )
+     LatestBackupUUID="${LatestBackupUUID: -36}"
+
+}
+
+function GetBackupStatus {
+    GetLatestBackupUUID
+    BackupStatus=$( curl -s "$HOST/api/client/servers/$n/backups/$LatestBackupUUID" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.completed_at'
+     )
+    
 }
 
 function GetFriendlyName {
@@ -425,8 +485,7 @@ function GetLastBackup {
      LastBackup=$(date -d"${LastBackup: -25}" +%s 2> /dev/null)
      LastBackupString=$LastBackup
      LastBackup=$((SecondsNow - LastBackup))
-
-        
+ 
 }
 
 function GetLastUsed {
