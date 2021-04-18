@@ -369,7 +369,7 @@ function HandleFailedBackup {
         echo "There doesn't appear to be any failed backups on $FriendlyName"
     # If there's only one failed backup, we can just proceed like normal, just delete it and attempt a new one
      elif [ ${#FailedBackup} = 36 ]; then
-        whiptail --title "Warning" --msgbox "Found failed backup on $FriendlyName Backup: $FailedBackup" 8 78
+        echo "Found failed backup on $FriendlyName | Backup: $FailedBackup"
         DeleteFailedBackup
         echo "Failed Backup: $FailedBackup removed, starting new backup attempt on $FriendlyName"
         sleep 2
@@ -394,7 +394,7 @@ function HandleFailedBackup {
         done
     # If there's more than 36 characters in the string, then there's multiple failed backups, and we need to handle it differently
      elif [ ${#FailedBackup} > 36 ]; then
-        whiptail --title "Warning" --msgbox "Found MULTIPLE failed backups on $FriendlyName" 8 78
+        echo "Found multiple failed backups on $FriendlyName"
         # This loop deletes every failed backup except the last without attempting a new backup. Once the string is equal to 36 characters \
         # you know you're on your last failed backup, so the loop breaks. 
         while true; do
