@@ -91,46 +91,58 @@ function ServerInstall {
 
 # API call to request server start and then wait 10 seconds
 function ServerStart {
-    GetFriendlyName
-    curl "$HOST/api/client/servers/$n/power" \
-        -H 'Accept: application/json' \
-        -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer '$APIKEY'' \
-        -X POST \
-        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
-        -d '{
-    "signal": "start"
-    }'
-    msgs=( "Starting $FriendlyName." "Starting $FriendlyName.." "Starting $FriendlyName..." "$FriendlyName is almost ready!" "Done" )
-    for i in {1..5}; do
-    sleep 2
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server is starting" 6 60 0
+    while true; do
+        GetFriendlyName
+        GetServerState
+        if [ $ServerState = "ONLINE" ] || [ $ServerState = "starting" ]; then
+            break
+        fi
+        curl "$HOST/api/client/servers/$n/power" \
+            -H 'Accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -H 'Authorization: Bearer '$APIKEY'' \
+            -X POST \
+            -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
+            -d '{
+        "signal": "start"
+        }'
+        msgs=( "Starting $FriendlyName." "Starting $FriendlyName.." "Starting $FriendlyName..." "$FriendlyName is almost ready!" "Done" )
+        for i in {1..5}; do
+        sleep 2
+        echo XXX
+        echo $(( i * 20 ))
+        echo ${msgs[i-1]}
+        echo XXX
+        done |whiptail --gauge "Please wait while the server is starting" 6 60 0
+    done
 }
 
 # API call to request server stop and wait 10 seconds
 function ServerStop {
-    GetFriendlyName
-    curl "$HOST/api/client/servers/$n/power" \
-        -H 'Accept: application/json' \
-        -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer '$APIKEY'' \
-        -X POST \
-        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
-        -d '{
-    "signal": "stop"
-    }'
-    msgs=( "Stopping $FriendlyName." "Stopping $FriendlyName.." "Stopping $FriendlyName..." "$FriendlyName is shutting down!" "Done" )
-    for i in {1..5}; do
-    sleep 2
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server is shutting down" 6 60 0
+    while true; do
+        GetServerState
+        GetFriendlyName
+        if [ $ServerState = "OFFLINE" ] || [ $ServerState = "stopping" ]; then
+            break
+        fi
+        curl "$HOST/api/client/servers/$n/power" \
+            -H 'Accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -H 'Authorization: Bearer '$APIKEY'' \
+            -X POST \
+            -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
+            -d '{
+        "signal": "stop"
+        }'
+        msgs=( "Stopping $FriendlyName." "Stopping $FriendlyName.." "Stopping $FriendlyName..." "$FriendlyName is shutting down!" "Done" )
+        for i in {1..5}; do
+        sleep 2
+        echo XXX
+        echo $(( i * 20 ))
+        echo ${msgs[i-1]}
+        echo XXX
+        done |whiptail --gauge "Please wait while the server is shutting down" 6 60 0
+    done
 }
 
 # API call to request server restart and wait 10 seconds
@@ -281,44 +293,56 @@ function SnapshotVariableChange {
 
 # API call that sends a message on the server and waits 5 seconds
 function AnnounceMessage {
-    GetFriendlyName
-   curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
-     -H 'Accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer '$APIKEY' ' \
-     -X POST \
-     -d '{
-     "command": "say '"$ANNOUNCE_MESSAGE"'"
-  }'
-    msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
-    for i in {1..5}; do
-    sleep 1
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server announces your message" 6 65 0
+    while true; do
+        GetFriendlyName
+        GetServerState
+        if [ $ServerState = "OFFLINE" ] || [ $ServerState = "stopping" ]; then
+            break
+        fi
+        curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer '$APIKEY' ' \
+        -X POST \
+        -d '{
+        "command": "say '"$ANNOUNCE_MESSAGE"'"
+    }'
+        msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
+        for i in {1..5}; do
+        sleep 1
+        echo XXX
+        echo $(( i * 20 ))
+        echo ${msgs[i-1]}
+        echo XXX
+        done |whiptail --gauge "Please wait while the server announces your message" 6 65 0
+    done
 }
 
 # API call that sends a message to announce when it's updating and waits 5 seconds
 function AnnounceDowntimeUpdate {
-    GetFriendlyName
-   curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
-     -H 'Accept: application/json' \
-     -H 'Content-Type: application/json' \
-     -H 'Authorization: Bearer '$APIKEY'' \
-     -X POST \
-     -d '{
-     "command": "say This server is going down momentarily to update. This process is automated, and is expected to take around 5 minutes to complete."
-  }'
-    msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
-    for i in {1..5}; do
-    sleep 1
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
+    while true; do
+        GetFriendlyName
+        GetServerState
+        if [ $ServerState = "OFFLINE" ] || [ $ServerState = "stopping" ]; then
+            break
+        fi
+        curl -s "$HOST/api/client/servers/$n/command" > /dev/null \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer '$APIKEY'' \
+        -X POST \
+        -d '{
+        "command": "say This server is going down momentarily to update. This process is automated, and is expected to take around 5 minutes to complete."
+    }'
+        msgs=( "Sending message on $FriendlyName." "Sending message on $FriendlyName.." "Sending message on $FriendlyName..." "Message has been sent to $FriendlyName" "Done" )
+        for i in {1..5}; do
+        sleep 1
+        echo XXX
+        echo $(( i * 20 ))
+        echo ${msgs[i-1]}
+        echo XXX
+        done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
+    done
 }
 
 function BackupRemoveOldest {
