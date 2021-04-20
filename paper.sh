@@ -524,19 +524,20 @@ function GetServerStatus {
     GetLastBackup
     GetLastUsed
     GetLastPlayerUsed
+    GetServerState
     LastUsedDifference=$(DisplayTime $LastUsed)
     LastBackupDifference=$(DisplayTime $LastBackup)
     if [ ${#LastBackupString} = 0 ]; then
         if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Backup In Progress"
+            echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Backup In Progress"
         else
-            echo "$FriendlyName | In Use | Current Player: $LastPlayerUsed | Backup In Progress"
+            echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Backup In Progress"
         fi
     else
         if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+            echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
         else
-            echo "$FriendlyName | In Use | Current Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+            echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
         fi
     fi
 }
@@ -631,6 +632,22 @@ function ServerInstallWait {
                 echo "Please wait while the servers install"
                 echo XXX
         done |whiptail --gauge "Please wait while the servers install" 6 60 0
+}
+
+function GetServerState {
+    ServerState=$( curl -s "$HOST/api/client/servers/$n/resources" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.current_state'
+     )
+     if [ "$ServerState" = "offline" ]; then
+        ServerState="OFFLINE"
+    
+     elif [ "$ServerState" = "running" ]; then
+        ServerState="ONLINE"
+     fi
 }
 
 # Menu
