@@ -142,29 +142,37 @@ function ServerStop {
         echo ${msgs[i-1]}
         echo XXX
         done |whiptail --gauge "Please wait while the server is shutting down" 6 60 0
+        break
     done
 }
 
 # API call to request server restart and wait 10 seconds
 function ServerRestart {
-    GetFriendlyName
-    curl "$HOST/api/client/servers/$n/power" \
-        -H 'Accept: application/json' \
-        -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer '$APIKEY'' \
-        -X POST \
-        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
-        -d '{
-    "signal": "restart"
-    }'
-    msgs=( "Restarting $FriendlyName." "Restarting $FriendlyName.." "Restarting $FriendlyName..." "$FriendlyName is restarting!" "Done" )
-    for i in {1..5}; do
-    sleep 2
-    echo XXX
-    echo $(( i * 20 ))
-    echo ${msgs[i-1]}
-    echo XXX
-    done |whiptail --gauge "Please wait while the server is restarting" 6 60 0
+    while true; do
+        GetFriendlyName
+        GetServerState
+        if [ $ServerState = "OFFLINE" ] || [ $ServerState = "stopping" ]; then
+            break
+        fi
+        curl "$HOST/api/client/servers/$n/power" \
+            -H 'Accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -H 'Authorization: Bearer '$APIKEY'' \
+            -X POST \
+            -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' \
+            -d '{
+        "signal": "restart"
+        }'
+        msgs=( "Restarting $FriendlyName." "Restarting $FriendlyName.." "Restarting $FriendlyName..." "$FriendlyName is restarting!" "Done" )
+        for i in {1..5}; do
+        sleep 2
+        echo XXX
+        echo $(( i * 20 ))
+        echo ${msgs[i-1]}
+        echo XXX
+        done |whiptail --gauge "Please wait while the server is restarting" 6 60 0
+        break
+    done
 }
 
 # API call to request server backup and wait 10 seconds
@@ -315,6 +323,7 @@ function AnnounceMessage {
         echo ${msgs[i-1]}
         echo XXX
         done |whiptail --gauge "Please wait while the server announces your message" 6 65 0
+        break
     done
 }
 
@@ -342,6 +351,7 @@ function AnnounceDowntimeUpdate {
         echo ${msgs[i-1]}
         echo XXX
         done |whiptail --gauge "Please wait while the server announces the default message" 6 65 0
+        break
     done
 }
 
