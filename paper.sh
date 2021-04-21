@@ -114,6 +114,7 @@ function ServerStart {
         echo ${msgs[i-1]}
         echo XXX
         done |whiptail --gauge "Please wait while the server is starting" 6 60 0
+        break
     done
 }
 
