@@ -685,7 +685,6 @@ function ServerStartWait {
                 echo "Please wait while the servers start"
                 echo XXX
         done |whiptail --gauge "Please wait while the servers start" 6 60 0
-
 }
 
 function ServerInstallBuffer {
@@ -708,7 +707,6 @@ function GetServerState {
      )
      if [ "$ServerState" = "offline" ]; then
         ServerState="OFFLINE"
-    
      elif [ "$ServerState" = "running" ]; then
         ServerState="ONLINE"
      elif [ "$ServerState" = "starting" ]; then
