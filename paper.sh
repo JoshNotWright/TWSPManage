@@ -73,6 +73,10 @@ SnapshotServers=(
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
     GetFriendlyName
+    GetServerState 
+    if [ $ServerState = "OFFLINE" ]; then
+        StoppedServers+=("$n")
+    fi
     curl -s "$HOST/api/client/servers/$n/settings/reinstall" > /dev/null \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -114,6 +118,7 @@ function ServerStart {
         echo ${msgs[i-1]}
         echo XXX
         done |whiptail --gauge "Please wait while the server is starting" 6 60 0
+        break
     done
 }
 
@@ -668,6 +673,30 @@ function ServerInstallWait {
         done |whiptail --gauge "Please wait while the servers install" 6 60 0
 }
 
+function ServerStartWait {
+    for i in {1..50}; do
+                GetServerState
+                if [ $ServerState == "ONLINE" ]; then
+                    break
+                fi
+                sleep 1.5
+                echo XXX
+                echo $(( i * 2 ))
+                echo "Please wait while the servers start"
+                echo XXX
+        done |whiptail --gauge "Please wait while the servers start" 6 60 0
+}
+
+function ServerInstallBuffer {
+    for i in {1..20}; do
+                sleep 1
+                echo XXX
+                echo $(( i * 5 ))
+                echo "Please wait for the server installation to begin"
+                echo XXX
+            done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
+}
+
 function GetServerState {
     ServerState=$( curl -s "$HOST/api/client/servers/$n/resources" \
      -H 'Accept: application/json' \
@@ -678,9 +707,10 @@ function GetServerState {
      )
      if [ "$ServerState" = "offline" ]; then
         ServerState="OFFLINE"
-    
      elif [ "$ServerState" = "running" ]; then
         ServerState="ONLINE"
+     elif [ "$ServerState" = "starting" ]; then
+        ServerState="STARTING"
      fi
 }
 
@@ -712,116 +742,81 @@ case $choice in
                 # Paper Server Update
                 clear
                 echo "Starting update on all Paper based servers..."
-                for n in "${PaperServers[@]}"
-                do
-                AnnounceDowntimeUpdate
-                done
-                for i in {1..20}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 5 ))
-                echo "Please wait for the server installation to begin"
-                echo XXX
-                done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
+                for n in "${PaperServers[@]}"; do
+                AnnounceDowntimeUpdate; done
+                ServerInstallBuffer
                 clear
-                for n in "${PaperServers[@]}"
-                do
-                ServerInstall     
-                done
+                for n in "${PaperServers[@]}"; do
+                ServerInstall; done
                 ServerInstallWait
                 clear
-                for n in "${PaperServers[@]}"
-                do
-                ServerStart        
-                done
+                for n in "${PaperServers[@]}"; do
+                ServerStart; done
+                for n in "${PaperServers[@]}"; do
+                ServerStartWait; done
+                for n in "${StoppedServers[@]}"; do
+                ServerStop; done
             ;;
             2.)
                 # Paper + Geyser Server Update
                 clear
                 echo "Starting update on all Paper + Geyser based servers..."
-                for n in "${PaperGeyserServers[@]}"
-                do
-                AnnounceDowntimeUpdate
-                done
-                for i in {1..20}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 5 ))
-                echo "Please wait for the server installation to begin"
-                echo XXX
-                done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
+                for n in "${PaperGeyserServers[@]}"; do
+                AnnounceDowntimeUpdate; done
+                ServerInstallBuffer
                 clear
-                for n in "${PaperGeyserServers[@]}"
-                do
-                ServerInstall
-                done
+                for n in "${PaperGeyserServers[@]}"; do
+                ServerInstall; done
                 ServerInstallWait
                 clear
-                for n in "${PaperGeyserServers[@]}"
-                do
-                ServerStart
-                done
+                for n in "${PaperGeyserServers[@]}"; do
+                ServerStart; done
+                for n in "${PaperGeyserServers[@]}"; do
+                ServerStartWait; done
+                for n in "${StoppedServers[@]}"; do
+                ServerStop; done
+                
             ;;
             3.)
                 # Snapshot Server Update
                 clear
-                for n in "${SnapshotServers[@]}"
-                do
-                AnnounceDowntimeUpdate
-                done
-                for i in {1..20}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 5 ))
-                echo "Please wait for the server installation to begin"
-                echo XXX
-                done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
+                for n in "${SnapshotServers[@]}"; do
+                AnnounceDowntimeUpdate; done
+                ServerInstallBuffer
                 clear
-                for n in "${SnapshotServers[@]}"
-                do
-                SnapshotVariableChange
-                done
-                for n in "${SnapshotServers[@]}"
-                do
-                ServerInstall
-                done
+                for n in "${SnapshotServers[@]}"; do
+                SnapshotVariableChange; done
+                for n in "${SnapshotServers[@]}"; do
+                ServerInstall; done
                 ServerInstallWait
                 clear
-                for n in "${SnapshotServers[@]}"
-                do
-                ServerStart
-                done
+                for n in "${SnapshotServers[@]}"; do
+                ServerStart; done
+                for n in "${SnapshotServers[@]}"; do
+                ServerStartWait; done
+                for n in "${StoppedServers[@]}"; do
+                ServerStop; done
             ;;
             4.)
                 # All Server Update
                 clear
-                for n in "${AllServers[@]}"
-                do
-                AnnounceDowntimeUpdate
-                done
-                for i in {1..20}; do
-                sleep 1
-                echo XXX
-                echo $(( i * 5 ))
-                echo "Please wait for the server installation to begin"
-                echo XXX
-                done |whiptail --gauge "Please wait for the server installation to begin" 6 60 0
+                for n in "${AllServers[@]}"; do
+                AnnounceDowntimeUpdate; done
+                ServerInstallBuffer
                 clear
-                for n in "${SnapshotServers[@]}"
-                do
-                SnapshotVariableChange
-                done
+                for n in "${SnapshotServers[@]}"; do
+                SnapshotVariableChange; done
                 echo "Starting update on all Servers..."
-                for n in "${AllServers[@]}"
-                do
-                ServerInstall
-                done
+                for n in "${AllServers[@]}"; do
+                ServerInstall; done
                 ServerInstallWait
                 clear
-                for n in "${AllServers[@]}"
-                do
-                ServerStart
-                done
+                for n in "${AllServers[@]}"; do
+                ServerStart; done
+                for n in "${AllServers[@]}"; do
+                ServerStartWait; done
+                for n in "${StoppedServers[@]}"; do
+                ServerStop; done
             ;;
         esac
     ;;
