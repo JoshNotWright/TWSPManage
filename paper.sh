@@ -748,14 +748,17 @@ case $choice in
                 clear
                 for n in "${PaperServers[@]}"; do
                 ServerInstall; done
-                ServerInstallWait
+                for n in "${PaperServers[@]}"; do
+                ServerInstallWait; done
                 clear
                 for n in "${PaperServers[@]}"; do
                 ServerStart; done
-                for n in "${PaperServers[@]}"; do
-                ServerStartWait; done
-                for n in "${StoppedServers[@]}"; do
-                ServerStop; done
+                if [ ${#StoppedServers[@]} -gt 0 ]; then
+                    for n in "${PaperServers[@]}"; do
+                    ServerStartWait; done
+                    for n in "${StoppedServers[@]}"; do
+                    ServerStop; done
+                fi
             ;;
             2.)
                 # Paper + Geyser Server Update
@@ -767,14 +770,17 @@ case $choice in
                 clear
                 for n in "${PaperGeyserServers[@]}"; do
                 ServerInstall; done
-                ServerInstallWait
+                for n in "${PaperGeyserServers[@]}"; do
+                ServerInstallWait; done
                 clear
                 for n in "${PaperGeyserServers[@]}"; do
                 ServerStart; done
-                for n in "${PaperGeyserServers[@]}"; do
-                ServerStartWait; done
-                for n in "${StoppedServers[@]}"; do
-                ServerStop; done
+                if [ ${#StoppedServers[@]} -gt 0 ]; then
+                    for n in "${PaperGeyserServers[@]}"; do
+                    ServerStartWait; done
+                    for n in "${StoppedServers[@]}"; do
+                    ServerStop; done
+                fi
                 
             ;;
             3.)
@@ -788,14 +794,17 @@ case $choice in
                 SnapshotVariableChange; done
                 for n in "${SnapshotServers[@]}"; do
                 ServerInstall; done
-                ServerInstallWait
+                for n in "${SnapshotServers[@]}"; do
+                ServerInstallWait; done
                 clear
                 for n in "${SnapshotServers[@]}"; do
                 ServerStart; done
-                for n in "${SnapshotServers[@]}"; do
-                ServerStartWait; done
-                for n in "${StoppedServers[@]}"; do
-                ServerStop; done
+                if [ ${#StoppedServers[@]} -gt 0 ]; then
+                    for n in "${SnapshotServers[@]}"; do
+                    ServerStartWait; done
+                    for n in "${StoppedServers[@]}"; do
+                    ServerStop; done
+                fi
             ;;
             4.)
                 # All Server Update
@@ -809,14 +818,17 @@ case $choice in
                 echo "Starting update on all Servers..."
                 for n in "${AllServers[@]}"; do
                 ServerInstall; done
-                ServerInstallWait
+                for n in "${AllServers[@]}"; do
+                ServerInstallWait; done
                 clear
                 for n in "${AllServers[@]}"; do
                 ServerStart; done
-                for n in "${AllServers[@]}"; do
-                ServerStartWait; done
-                for n in "${StoppedServers[@]}"; do
-                ServerStop; done
+                if [ ${#StoppedServers[@]} -gt 0 ]; then
+                    for n in "${AllServers[@]}"; do
+                    ServerStartWait; done
+                    for n in "${StoppedServers[@]}"; do
+                    ServerStop; done
+                fi
             ;;
         esac
     ;;
