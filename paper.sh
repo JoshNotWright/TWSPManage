@@ -46,6 +46,7 @@ AllAllServers=(
     '2efe6e55-8b98-4cba-942a-564d584623ae'
     'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
+    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
 )
 
 # List of Node 1 Servers
@@ -63,6 +64,7 @@ Node2Servers=(
     '2efe6e55-8b98-4cba-942a-564d584623ae'
     'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
+    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
 )
 
 # List of Snapshot Servers
@@ -833,6 +835,7 @@ case $choice in
         "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
+        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         3>&1 1>&2 2>&3)
         StartArray=($Start)
         clear
@@ -854,6 +857,7 @@ case $choice in
         "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
+        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         3>&1 1>&2 2>&3)
         StopArray=($Stop)
         clear
@@ -900,6 +904,7 @@ case $choice in
         "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
+        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
@@ -1116,6 +1121,7 @@ case $choice in
             "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
             "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
             "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
+            "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
             3>&1 1>&2 2>&3)
             BackupArray=($Backup)
             clear
@@ -1148,6 +1154,7 @@ case $choice in
         "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" ON \
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" ON \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
+        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         3>&1 1>&2 2>&3)
         SendMessageArray=($SendMessage)
         clear
