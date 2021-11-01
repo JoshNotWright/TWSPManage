@@ -18,6 +18,7 @@ PaperServers=(
     'b20a74c4-0e64-4a51-af4d-2a964a41207b'
     '068416f4-ea04-4b41-8fe9-ecad94000059'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
+    '3c8b3001-1182-433f-8aec-af21a56b422c'
 )
 
 # List of Servers running on the Paper + Geyser egg
@@ -33,6 +34,7 @@ AllServers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
+    '3c8b3001-1182-433f-8aec-af21a56b422c'
 )
 
 # List of Servers for the ALL Power / ALL Restart functions
@@ -47,6 +49,7 @@ AllAllServers=(
     'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
     'bf8e8bc0-de79-456d-9bde-8a72274c1785'
+    '3c8b3001-1182-433f-8aec-af21a56b422c'
 )
 
 # List of Node 1 Servers
@@ -65,6 +68,7 @@ Node2Servers=(
     'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
     'bf8e8bc0-de79-456d-9bde-8a72274c1785'
+    '3c8b3001-1182-433f-8aec-af21a56b422c'
 )
 
 # List of Snapshot Servers
@@ -74,6 +78,10 @@ SnapshotServers=(
 
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     GetFriendlyName
     GetServerState 
     if [ $ServerState = "OFFLINE" ]; then
@@ -97,6 +105,10 @@ function ServerInstall {
 
 # API call to request server start and then wait 10 seconds
 function ServerStart {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     while true; do
         GetFriendlyName
         GetServerState
@@ -126,6 +138,10 @@ function ServerStart {
 
 # API call to request server stop and wait 10 seconds
 function ServerStop {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     while true; do
         GetServerState
         GetFriendlyName
@@ -155,6 +171,10 @@ function ServerStop {
 
 # API call to request server restart and wait 10 seconds
 function ServerRestart {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     while true; do
         GetFriendlyName
         GetServerState
@@ -184,6 +204,10 @@ function ServerRestart {
 
 # API call to request server backup and wait 10 seconds
 function Backup {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     GetFriendlyName
     GetBackupLimit
     GetBackupCount
@@ -308,6 +332,10 @@ function SnapshotVariableChange {
 
 # API call that sends a message on the server and waits 5 seconds
 function AnnounceMessage {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     while true; do
         GetFriendlyName
         GetServerState
@@ -336,6 +364,10 @@ function AnnounceMessage {
 
 # API call that sends a message to announce when it's updating and waits 5 seconds
 function AnnounceDowntimeUpdate {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     while true; do
         GetFriendlyName
         GetServerState
@@ -403,6 +435,10 @@ function DeleteFailedBackup {
 }
 
 function HandleFailedBackup {
+    GetSuspensionStatus
+    if [ "$SuspensionStatus" = "true" ]; then
+        return
+    fi
     GetFriendlyName
     GetFailedBackup
     # If there's no failed backups, we don't have to do anything :D
@@ -562,23 +598,28 @@ function GetLastPlayerUsed {
 
 function GetServerStatus {
     GetFriendlyName
-    GetLastBackup
-    GetLastUsed
-    GetLastPlayerUsed
-    GetServerState
-    LastUsedDifference=$(DisplayTime $LastUsed)
-    LastBackupDifference=$(DisplayTime $LastBackup)
-    if [ ${#LastBackupString} = 0 ]; then
-        if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Backup In Progress"
-        else
-            echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Backup In Progress"
-        fi
+    GetSuspensionStatus  
+    if [ "$SuspensionStatus" = "true" ]; then
+        echo "$FriendlyName | Suspended"
     else
-        if [ $LastUsed -gt 300 ]; then
-            echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+        GetLastBackup
+        GetLastUsed
+        GetLastPlayerUsed
+        GetServerState
+        LastUsedDifference=$(DisplayTime $LastUsed)
+        LastBackupDifference=$(DisplayTime $LastBackup)
+        if [ ${#LastBackupString} = 0 ]; then
+            if [ $LastUsed -gt 300 ]; then
+                echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Backup In Progress"
+            else
+                echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Backup In Progress"
+            fi
         else
-            echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+            if [ $LastUsed -gt 300 ]; then
+                echo "$FriendlyName | $ServerState | Last Used: $LastUsedDifference ago | Last Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+            else
+                echo "$FriendlyName | $ServerState | In Use | Current Player: $LastPlayerUsed | Last Backup: $LastBackupDifference ago"
+            fi
         fi
     fi
 }
@@ -716,6 +757,31 @@ function GetServerState {
      fi
 }
 
+function GetSuspensionStatus {
+    SuspensionStatus==$( curl -s "$HOST/api/client/servers/$n" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X GET \
+     -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.is_suspended'
+     )
+     if [ "$SuspensionStatus" = "=false" ]; then
+        SuspensionStatus="false"
+     elif [ "$SuspensionStatus" = "=true" ]; then
+        SuspensionStatus="true"
+     fi
+} 
+
+function GetAllServers {
+    curl -s "$HOST/api/client/" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$APIKEY'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.14" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -848,6 +914,7 @@ case $choice in
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
+        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
         3>&1 1>&2 2>&3)
         StartArray=($Start)
         clear
@@ -870,6 +937,7 @@ case $choice in
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
+        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
         3>&1 1>&2 2>&3)
         StopArray=($Stop)
         clear
@@ -917,6 +985,7 @@ case $choice in
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
+        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
         3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
@@ -1134,6 +1203,7 @@ case $choice in
             "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
             "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
             "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
+            "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
             3>&1 1>&2 2>&3)
             BackupArray=($Backup)
             clear
@@ -1166,7 +1236,8 @@ case $choice in
         "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" ON \
         "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" ON \
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
+        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" ON \
+        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" ON \
         3>&1 1>&2 2>&3)
         SendMessageArray=($SendMessage)
         clear
@@ -1190,5 +1261,5 @@ case $choice in
     12.)
         # Exit
         exit
-    ;;     
+    ;;   
 esac
