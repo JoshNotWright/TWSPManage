@@ -783,7 +783,7 @@ function GetAllServers {
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.14" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v3.15" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
