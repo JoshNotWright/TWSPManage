@@ -76,6 +76,20 @@ SnapshotServers=(
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
 )
 
+# List of Update-able Node 1 Servers
+Node1UpdateServers=(
+    '068416f4-ea04-4b41-8fe9-ecad94000059'
+    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
+    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
+)
+
+# List of Update-able Node 2 Servers
+Node2UpdateServers=(
+    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
+    '0de1c057-d48c-45f5-9280-849aa664c92a'
+    '3c8b3001-1182-433f-8aec-af21a56b422c'
+)
+
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
     GetSuspensionStatus
@@ -1077,11 +1091,30 @@ case $choice in
             if DowntimePrompt; then
                 DowntimeMessageInput
             fi
+            if (whiptail --title "TheWrightServer" --yesno "Would you like to update before stopping?" 8 78); then
+                updateBeforeStop=true
+            else
+                updateBeforeStop=false
+            fi
             for NodeStop in "${NodeStopArray[@]}"; do
                 case $NodeStop in
                     1.)
                         # Node 1 Stop All
                         clear
+                        if [ $updateBeforeStop ]; then
+                            echo "Starting update on all updateable based servers before stopping..."
+                            for n in "${SnapshotServers[@]}"; do
+                            SnapshotVariableChange; done
+                            for n in "${Node1UpdateServers[@]}"; do
+                            AnnounceDowntimeUpdate; done
+                            ServerInstallBuffer
+                            clear
+                            for n in "${Node1UpdateServers[@]}"; do
+                            ServerInstall; done
+                            for n in "${Node1UpdateServers[@]}"; do
+                            ServerInstallWait; done
+                            clear
+                        fi
                         echo "Stopping all servers on Node 1..."
                         for n in "${Node1Servers[@]}"
                         do
@@ -1101,6 +1134,18 @@ case $choice in
                     2.)
                         # Node 2 Stop All
                         clear
+                        if [ $updateBeforeStop ]; then
+                            echo "Starting update on all updateable servers before stopping..."
+                            for n in "${Node2UpdateServers[@]}"; do
+                            AnnounceDowntimeUpdate; done
+                            ServerInstallBuffer
+                            clear
+                            for n in "${Node2UpdateServers[@]}"; do
+                            ServerInstall; done
+                            for n in "${Node2UpdateServers[@]}"; do
+                            ServerInstallWait; done
+                            clear
+                        fi
                         echo "Stopping all servers on Node 2..."
                         for n in "${Node2Servers[@]}"
                         do
