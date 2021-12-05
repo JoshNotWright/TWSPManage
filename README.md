@@ -9,6 +9,7 @@
 - Automatically handle failed backups
 - Friendly server names in GUI
 - Check when your servers were last backed up
+- Update on server stop
 
 ## Planned Features
-- Update on server stop
+
