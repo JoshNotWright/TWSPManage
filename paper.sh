@@ -1109,7 +1109,7 @@ case $choice in
                     1.)
                         # Node 1 Stop All
                         clear
-                        if [ $updateBeforeStop ]; then
+                        if [ $updateBeforeStop == true ]; then
                             echo "Starting update on all updateable based servers before stopping..."
                             for n in "${SnapshotServers[@]}"; do
                             SnapshotVariableChange; done
@@ -1142,7 +1142,7 @@ case $choice in
                     2.)
                         # Node 2 Stop All
                         clear
-                        if [ $updateBeforeStop ]; then
+                        if [ $updateBeforeStop == true ]; then
                             echo "Starting update on all updateable servers before stopping..."
                             for n in "${Node2UpdateServers[@]}"; do
                             AnnounceDowntimeUpdate; done
