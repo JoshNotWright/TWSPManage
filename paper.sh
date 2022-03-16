@@ -19,6 +19,7 @@ PaperServers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
+    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
 # List of Servers running on the Paper + Geyser egg
@@ -35,6 +36,7 @@ AllServers=(
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
+    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
 # List of Servers for the ALL Power / ALL Restart functions
@@ -50,6 +52,7 @@ AllAllServers=(
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
     'bf8e8bc0-de79-456d-9bde-8a72274c1785'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
+    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
 # List of Node 1 Servers
@@ -69,6 +72,7 @@ Node2Servers=(
     '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
     'bf8e8bc0-de79-456d-9bde-8a72274c1785'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
+    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
 # List of Snapshot Servers
@@ -88,6 +92,7 @@ Node2UpdateServers=(
     '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
     '0de1c057-d48c-45f5-9280-849aa664c92a'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
+    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
 # API call to request server install and then wait 10 seconds
@@ -929,6 +934,7 @@ case $choice in
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
+        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
         3>&1 1>&2 2>&3)
         StartArray=($Start)
         clear
@@ -952,6 +958,7 @@ case $choice in
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
+        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
         3>&1 1>&2 2>&3)
         StopArray=($Stop)
         clear
@@ -1000,6 +1007,7 @@ case $choice in
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
         "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
+        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
         3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
@@ -1249,6 +1257,7 @@ case $choice in
             "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
             "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
             "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
+            "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
             3>&1 1>&2 2>&3)
             BackupArray=($Backup)
             clear
@@ -1283,6 +1292,7 @@ case $choice in
         "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
         "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" ON \
         "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" ON \
+        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" ON \
         3>&1 1>&2 2>&3)
         SendMessageArray=($SendMessage)
         clear
