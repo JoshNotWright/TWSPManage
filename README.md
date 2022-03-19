@@ -12,5 +12,4 @@
 - Update on server stop
 - Custom server status screen
 
-## Planned Features
 
