@@ -1076,161 +1076,147 @@ case $choice in
     6.)
         # Stop All
         clear
-        passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
-        if [ $PASS == $passinput ]; then
-            NodeStop=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
-            "1." "Node 1" OFF \
-            "2." "Node 2" OFF \
-            3>&1 1>&2 2>&3)
-            NodeStopArray=($NodeStop)
-            if DowntimePrompt; then
-                DowntimeMessageInput
-            fi
-            if (whiptail --title "TheWrightServer" --yesno "Would you like to update before stopping?" 8 78); then
-                updateBeforeStop=true
-            else
-                updateBeforeStop=false
-            fi
-            for NodeStop in "${NodeStopArray[@]}"; do
-                case $NodeStop in
-                    1.)
-                        # Node 1 Stop All
-                        GetAllServersByNode 1
-                        clear
-                        if [ $updateBeforeStop == true ]; then
-                            echo "Starting update on all updateable based servers before stopping..."
-                            for n in "${SnapshotServers[@]}"; do
-                            SnapshotVariableChange; done
-                            for n in "${Node1UpdateServers[@]}"; do
-                            AnnounceDowntimeUpdate; done
-                            ServerInstallBuffer
-                            clear
-                            for n in "${Node1UpdateServers[@]}"; do
-                            ServerInstall; done
-                            for n in "${Node1UpdateServers[@]}"; do
-                            ServerInstallWait; done
-                            clear
-                        fi
-                        echo "Stopping all servers on Node 1..."
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        ServerStop
-                        done
-                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been stopped on Node 1"
-                        fi
-                    ;;
-                    2.)
-                        # Node 2 Stop All
-                        GetAllServersByNode 2
-                        clear
-                        if [ $updateBeforeStop == true ]; then
-                            echo "Starting update on all updateable servers before stopping..."
-                            for n in "${Node2UpdateServers[@]}"; do
-                            AnnounceDowntimeUpdate; done
-                            ServerInstallBuffer
-                            clear
-                            for n in "${Node2UpdateServers[@]}"; do
-                            ServerInstall; done
-                            for n in "${Node2UpdateServers[@]}"; do
-                            ServerInstallWait; done
-                            clear
-                        fi
-                        echo "Stopping all servers on Node 2..."
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        ServerStop
-                        done
-                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been stopped on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been stopped on Node 2"
-                        fi
-                    ;;
-                esac
-            done
-        else
-            clear
-            echo "Incorrect admin password."
-            exit
+        NodeStop=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
+        "1." "Node 1" OFF \
+        "2." "Node 2" OFF \
+        3>&1 1>&2 2>&3)
+        NodeStopArray=($NodeStop)
+        if DowntimePrompt; then
+            DowntimeMessageInput
         fi
+        if (whiptail --title "TheWrightServer" --yesno "Would you like to update before stopping?" 8 78); then
+            updateBeforeStop=true
+        else
+            updateBeforeStop=false
+        fi
+        for NodeStop in "${NodeStopArray[@]}"; do
+            case $NodeStop in
+                1.)
+                    # Node 1 Stop All
+                    GetAllServersByNode 1
+                    clear
+                    if [ $updateBeforeStop == true ]; then
+                        echo "Starting update on all updateable based servers before stopping..."
+                        for n in "${SnapshotServers[@]}"; do
+                        SnapshotVariableChange; done
+                        for n in "${Node1UpdateServers[@]}"; do
+                        AnnounceDowntimeUpdate; done
+                        ServerInstallBuffer
+                        clear
+                        for n in "${Node1UpdateServers[@]}"; do
+                        ServerInstall; done
+                        for n in "${Node1UpdateServers[@]}"; do
+                        ServerInstallWait; done
+                        clear
+                    fi
+                    echo "Stopping all servers on Node 1..."
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    AnnounceMessage
+                    done
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    ServerStop
+                    done
+                    if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                        :
+                    else
+                        clear
+                        echo "All servers have been stopped on Node 1"
+                    fi
+                ;;
+                2.)
+                    # Node 2 Stop All
+                    GetAllServersByNode 2
+                    clear
+                    if [ $updateBeforeStop == true ]; then
+                        echo "Starting update on all updateable servers before stopping..."
+                        for n in "${Node2UpdateServers[@]}"; do
+                        AnnounceDowntimeUpdate; done
+                        ServerInstallBuffer
+                        clear
+                        for n in "${Node2UpdateServers[@]}"; do
+                        ServerInstall; done
+                        for n in "${Node2UpdateServers[@]}"; do
+                        ServerInstallWait; done
+                        clear
+                    fi
+                    echo "Stopping all servers on Node 2..."
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    AnnounceMessage
+                    done
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    ServerStop
+                    done
+                    if [ ${#NodeStopArray[@]} -gt 1 ]; then
+                        clear
+                        echo "All servers have been stopped on selected nodes"
+                    else
+                        clear
+                        echo "All servers have been stopped on Node 2"
+                    fi
+                ;;
+            esac
+        done
     ;;
     7.)
         # Restart All
         clear
-        passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
-        if [ $PASS == $passinput ]; then
-            NodeRestart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
-            "1." "Node 1" OFF \
-            "2." "Node 2" OFF \
-            3>&1 1>&2 2>&3)
-            NodeRestartArray=($NodeRestart)
-            if DowntimePrompt; then
-                DowntimeMessageInput
-            fi
-            for NodeRestart in "${NodeRestartArray[@]}"; do
-                case $NodeRestart in
-                    1.)
-                        # Node 1 Restart All
-                        GetAllServersByNode 1
-                        clear
-                        echo "Restarting all servers on Node 1..."
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        ServerRestart
-                        done
-                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been restarted on Node 1"
-                        fi
-                    ;;
-                    2.)
-                        # Node 2 Restart All
-                        GetAllServersByNode 2
-                        clear
-                        echo "Restarting all servers on Node 2..."
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${AllServersByNode[@]}"
-                        do
-                        ServerRestart
-                        done
-                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been restarted on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been restarted on Node 2"
-                        fi
-                    ;;
-                esac
-            done
-        else
-            clear
-            echo "Incorrect admin password."
-            exit
+        NodeRestart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
+        "1." "Node 1" OFF \
+        "2." "Node 2" OFF \
+        3>&1 1>&2 2>&3)
+        NodeRestartArray=($NodeRestart)
+        if DowntimePrompt; then
+            DowntimeMessageInput
         fi
+        for NodeRestart in "${NodeRestartArray[@]}"; do
+            case $NodeRestart in
+                1.)
+                    # Node 1 Restart All
+                    GetAllServersByNode 1
+                    clear
+                    echo "Restarting all servers on Node 1..."
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    AnnounceMessage
+                    done
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    ServerRestart
+                    done
+                    if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                        :
+                    else
+                        clear
+                        echo "All servers have been restarted on Node 1"
+                    fi
+                ;;
+                2.)
+                    # Node 2 Restart All
+                    GetAllServersByNode 2
+                    clear
+                    echo "Restarting all servers on Node 2..."
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    AnnounceMessage
+                    done
+                    for n in "${AllServersByNode[@]}"
+                    do
+                    ServerRestart
+                    done
+                    if [ ${#NodeRestartArray[@]} -gt 1 ]; then
+                        clear
+                        echo "All servers have been restarted on selected nodes"
+                    else
+                        clear
+                        echo "All servers have been restarted on Node 2"
+                    fi
+                ;;
+            esac
+        done
     ;;
     8.)
         # Backup
