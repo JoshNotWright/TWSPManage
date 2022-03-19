@@ -16,17 +16,6 @@ paperGeyserEggID=$(jq -r '.paperGeyserEggID' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
-# List of Servers for Update ALL function
-AllServers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2' 
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
 # List of Update-able Node 1 Servers
 Node1UpdateServers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
@@ -739,8 +728,8 @@ function GetSuspensionStatus {
 } 
 
 function GetAllServers {
-    AllAllServers=()
-    AllAllServers=($( curl -s "$HOST/api/application/servers" \
+    AllServers=()
+    AllServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
     -H 'Authorization: Bearer '$applicationKey'' \
@@ -814,8 +803,18 @@ function GetFriendlyNodeName {
     )
 }
 
+function GetAllUpdateServers {
+    GetPaperServers
+    GetPaperGeyserServers
+    GetSnapshotServers
+    AllUpdateServers=()
+    AllUpdateServers+=(${PaperServers[@]})
+    AllUpdateServers+=(${PaperGeyserServers[@]})
+    AllUpdateServers+=(${SnapshotServers[@]})
+}
+
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v4.0" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
     "1." "Update" \
     "2." "Start" \
@@ -912,23 +911,24 @@ case $choice in
             ;;
             4.)
                 # All Server Update
+                GetAllUpdateServers
                 clear
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 AnnounceDowntimeUpdate; done
                 ServerInstallBuffer
                 clear
                 for n in "${SnapshotServers[@]}"; do
                 SnapshotVariableChange; done
                 echo "Starting update on all Servers..."
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerInstall; done
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerStart; done
                 if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${AllServers[@]}"; do
+                    for n in "${AllUpdateServers[@]}"; do
                     ServerStartWait; done
                     for n in "${StoppedServers[@]}"; do
                     ServerStop; done
@@ -943,7 +943,7 @@ case $choice in
                 --checklist "Which servers would you like to start?" --separate-output 20 78 4 \
         )
         GetAllServers
-        for n in "${AllAllServers[@]}"; do
+        for n in "${AllServers[@]}"; do
                 GetFriendlyName
                 args+=("$n" "$FriendlyName" '\')
         done
@@ -963,7 +963,7 @@ case $choice in
                 --checklist "Which servers would you like to stop?" --separate-output 20 78 4 \
         )
         GetAllServers
-        for n in "${AllAllServers[@]}"; do
+        for n in "${AllServers[@]}"; do
                 GetFriendlyName
                 args+=("$n" "$FriendlyName" '\')
         done
@@ -1008,7 +1008,7 @@ case $choice in
                 --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
         )
         GetAllServers
-        for n in "${AllAllServers[@]}"; do
+        for n in "${AllServers[@]}"; do
                 GetFriendlyName
                 args+=("$n" "$FriendlyName" '\')
         done
@@ -1076,18 +1076,19 @@ case $choice in
     6.)
         # Stop All
         clear
-        NodeStop=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
-        "1." "Node 1" OFF \
-        "2." "Node 2" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeStop=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         NodeStopArray=($NodeStop)
         if DowntimePrompt; then
             DowntimeMessageInput
-        fi
-        if (whiptail --title "TheWrightServer" --yesno "Would you like to update before stopping?" 8 78); then
-            updateBeforeStop=true
-        else
-            updateBeforeStop=false
         fi
         for NodeStop in "${NodeStopArray[@]}"; do
             case $NodeStop in
@@ -1095,20 +1096,6 @@ case $choice in
                     # Node 1 Stop All
                     GetAllServersByNode 1
                     clear
-                    if [ $updateBeforeStop == true ]; then
-                        echo "Starting update on all updateable based servers before stopping..."
-                        for n in "${SnapshotServers[@]}"; do
-                        SnapshotVariableChange; done
-                        for n in "${Node1UpdateServers[@]}"; do
-                        AnnounceDowntimeUpdate; done
-                        ServerInstallBuffer
-                        clear
-                        for n in "${Node1UpdateServers[@]}"; do
-                        ServerInstall; done
-                        for n in "${Node1UpdateServers[@]}"; do
-                        ServerInstallWait; done
-                        clear
-                    fi
                     echo "Stopping all servers on Node 1..."
                     for n in "${AllServersByNode[@]}"
                     do
@@ -1129,18 +1116,6 @@ case $choice in
                     # Node 2 Stop All
                     GetAllServersByNode 2
                     clear
-                    if [ $updateBeforeStop == true ]; then
-                        echo "Starting update on all updateable servers before stopping..."
-                        for n in "${Node2UpdateServers[@]}"; do
-                        AnnounceDowntimeUpdate; done
-                        ServerInstallBuffer
-                        clear
-                        for n in "${Node2UpdateServers[@]}"; do
-                        ServerInstall; done
-                        for n in "${Node2UpdateServers[@]}"; do
-                        ServerInstallWait; done
-                        clear
-                    fi
                     echo "Stopping all servers on Node 2..."
                     for n in "${AllServersByNode[@]}"
                     do
@@ -1227,7 +1202,7 @@ case $choice in
                 --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
             )
             GetAllServers
-            for n in "${AllAllServers[@]}"; do
+            for n in "${AllServers[@]}"; do
                 GetFriendlyName
                 args+=("$n" "$FriendlyName" '\')
             done
@@ -1258,7 +1233,7 @@ case $choice in
             --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
         )
         GetAllServers
-        for n in "${AllAllServers[@]}"; do
+        for n in "${AllServers[@]}"; do
             GetFriendlyName
             args+=("$n" "$FriendlyName" '\')
         done
@@ -1274,20 +1249,20 @@ case $choice in
         # Failed Backup Check
         GetAllServers
         clear
-        if [ "${#AllAllServers[@]}" = 0 ]; then
+        if [ "${#AllServers[@]}" = 0 ]; then
             echo "There aren't yet any servers linked with this account."
         fi
-        for n in "${AllAllServers[@]}";do
+        for n in "${AllServers[@]}";do
         HandleFailedBackup;done
     ;;
     11.)
         # Server Status
         GetAllServers
         clear
-        if [ "${#AllAllServers[@]}" = 0 ]; then
+        if [ "${#AllServers[@]}" = 0 ]; then
             echo "There aren't yet any servers linked with this account."
         fi
-        for n in "${AllAllServers[@]}"; do
+        for n in "${AllServers[@]}"; do
         GetServerStatus; done
     ;;
     12.)
@@ -1295,19 +1270,8 @@ case $choice in
         exit
     ;;
     13.)
-        declare -a args=(
-            --title "TheWrightServer" \
-            --checklist "Choose the servers to message:" --separate-output 20 78 4 \
-        )
-        GetPaperServers
-        for n in "${PaperServers[@]}"; do
-            GetFriendlyName
-            args+=("$n" "$FriendlyName" '\')
-        done
-        testChoice=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
-        testChoiceArray=($testChoice)
-        clear
-        for n in "${testChoiceArray[@]}"; do
-        AnnounceMessage; done
-    ;;   
+        # Test
+        GetAllUpdateServers
+        echo "${AllUpdateServers[@]}"
+    ;;
 esac
