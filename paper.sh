@@ -1121,50 +1121,17 @@ case $choice in
             DowntimeMessageInput
         fi
         for NodeRestart in "${NodeRestartArray[@]}"; do
-            case $NodeRestart in
-                1.)
-                    # Node 1 Restart All
-                    GetAllServersByNode 1
-                    clear
-                    echo "Restarting all servers on Node 1..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    AnnounceMessage
-                    done
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerRestart
-                    done
-                    if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                        :
-                    else
-                        clear
-                        echo "All servers have been restarted on Node 1"
-                    fi
-                ;;
-                2.)
-                    # Node 2 Restart All
-                    GetAllServersByNode 2
-                    clear
-                    echo "Restarting all servers on Node 2..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    AnnounceMessage
-                    done
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerRestart
-                    done
-                    if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                        clear
-                        echo "All servers have been restarted on selected nodes"
-                    else
-                        clear
-                        echo "All servers have been restarted on Node 2"
-                    fi
-                ;;
-            esac
+            GetAllServersByNode $NodeRestart
+            for n in "${AllServersByNode[@]}"; do
+            ServerRestart; done
+            clear
+            echo "Restarting all servers on Node $NodeRestart"
         done
+        if [ "${#NodeRestartArray[@]}" -gt 1 ]; then
+            echo "All servers have been restarted on selected nodes"
+        else
+            echo "All servers have been restarted on Node $NodeRestart"
+        fi
     ;;
     8.)
         # Backup
