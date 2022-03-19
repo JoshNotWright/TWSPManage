@@ -1,99 +1,13 @@
-#!/bin/ash
+#!/bin/bash
 # Server Management Tool for TheWrightServer
-# Todo
-# - Cancel in sub menu take you back to menu
-# - Ask if user wants to update all before stopping servers
-# - Dockerize
-# - Add GUI to the new backup functions
-# - Change Start/Restart/Stop All to a checklist instead of a radio list
 
 HOST=$(jq -r '.host' config.json)
 APIKEY=$(jq -r '.apikey' config.json)
+applicationKey=$(jq -r '.applicationKey' config.json)
+paperEggID=$(jq -r '.paperEggID' config.json)
+snapshotEggID=$(jq -r '.snapshotEggID' config.json)
+paperGeyserEggID=$(jq -r '.paperGeyserEggID' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
-PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
-
-# List of Servers running on the Paper egg
-PaperServers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2' 
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
-# List of Servers running on the Paper + Geyser egg
-PaperGeyserServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-)
-
-# List of Servers for Update ALL function
-AllServers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2' 
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
-# List of Servers for the ALL Power / ALL Restart functions
-AllAllServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    '29248816-96e7-4c20-ae88-5d8e90334f94'
-    '2efe6e55-8b98-4cba-942a-564d584623ae'
-    'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
-    '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
-    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
-# List of Node 1 Servers
-Node1Servers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-)
-
-# List of Node 2 Servers
-Node2Servers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '29248816-96e7-4c20-ae88-5d8e90334f94'
-    '2efe6e55-8b98-4cba-942a-564d584623ae'
-    'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
-    '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
-    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
-# List of Snapshot Servers
-SnapshotServers=(
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-)
-
-# List of Update-able Node 1 Servers
-Node1UpdateServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-)
-
-# List of Update-able Node 2 Servers
-Node2UpdateServers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
 
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
@@ -792,17 +706,93 @@ function GetSuspensionStatus {
 } 
 
 function GetAllServers {
-    curl -s "$HOST/api/client/" \
+    AllServers=()
+    AllServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer '$APIKEY'' \
+    -H 'Authorization: Bearer '$applicationKey'' \
     -X GET \
-    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.uuid')
+    )
+}
 
+function GetAllNodes {
+    AllNodes=()
+    AllNodes=($( curl -s "$HOST/api/application/nodes" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.id')
+    )
+}
+
+function GetAllServersByNode {
+    AllServersByNode=()
+    AllServersByNode=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.node=="$1")" | jq -r '.uuid')
+    )
+}
+
+function GetPaperServers {
+    PaperServers=()
+    PaperServers=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.egg=="$paperEggID")" | jq -r '.uuid')
+    )
+}
+
+function GetSnapshotServers {
+    SnapshotServers=()
+    SnapshotServers=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.egg=="$snapshotEggID")" | jq -r '.uuid')
+    )
+}
+
+function GetPaperGeyserServers {
+    PaperGeyserServers=()
+    PaperGeyserServers=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.egg=="$paperGeyserEggID")" | jq -r '.uuid')
+    )
+}
+
+function GetFriendlyNodeName {
+    FriendlyNodeName=$( curl -s "$HOST/api/application/nodes/$n" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r '.attributes' | jq -r '.name'
+    )
+}
+
+function GetAllUpdateServers {
+    GetPaperServers
+    GetPaperGeyserServers
+    GetSnapshotServers
+    AllUpdateServers=()
+    AllUpdateServers+=(${PaperServers[@]})
+    AllUpdateServers+=(${PaperGeyserServers[@]})
+    AllUpdateServers+=(${SnapshotServers[@]})
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "TheWrightServer Management Tool v4.0" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -827,6 +817,7 @@ case $choice in
         case $Update in
             1.)
                 # Paper Server Update
+                GetPaperServers
                 clear
                 echo "Starting update on all Paper based servers..."
                 for n in "${PaperServers[@]}"; do
@@ -849,6 +840,7 @@ case $choice in
             ;;
             2.)
                 # Paper + Geyser Server Update
+                GetPaperGeyserServers
                 clear
                 echo "Starting update on all Paper + Geyser based servers..."
                 for n in "${PaperGeyserServers[@]}"; do
@@ -872,6 +864,7 @@ case $choice in
             ;;
             3.)
                 # Snapshot Server Update
+                GetSnapshotServers
                 clear
                 for n in "${SnapshotServers[@]}"; do
                 AnnounceDowntimeUpdate; done
@@ -895,23 +888,24 @@ case $choice in
             ;;
             4.)
                 # All Server Update
+                GetAllUpdateServers
                 clear
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 AnnounceDowntimeUpdate; done
                 ServerInstallBuffer
                 clear
                 for n in "${SnapshotServers[@]}"; do
                 SnapshotVariableChange; done
                 echo "Starting update on all Servers..."
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerInstall; done
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${AllServers[@]}"; do
+                for n in "${AllUpdateServers[@]}"; do
                 ServerStart; done
                 if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${AllServers[@]}"; do
+                    for n in "${AllUpdateServers[@]}"; do
                     ServerStartWait; done
                     for n in "${StoppedServers[@]}"; do
                     ServerStop; done
@@ -920,22 +914,17 @@ case $choice in
         esac
     ;;
     2.)
-
         # Start
-        Start=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to start?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" OFF \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which servers would you like to start?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllServers[@]}"; do
+                GetFriendlyName
+                args+=("$n" "$FriendlyName" '\')
+        done
+        Start=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         StartArray=($Start)
         clear
         echo -e "Starting selected servers..."
@@ -946,20 +935,16 @@ case $choice in
     ;;
     3.)
         # Stop
-        Stop=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to stop?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" OFF \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which servers would you like to stop?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllServers[@]}"; do
+                GetFriendlyName
+                args+=("$n" "$FriendlyName" '\')
+        done
+        Stop=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         StopArray=($Stop)
         clear
         if DowntimePrompt; then
@@ -995,20 +980,16 @@ case $choice in
     ;;
     4.)
         # Restart
-        Restart=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" OFF \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllServers[@]}"; do
+                GetFriendlyName
+                args+=("$n" "$FriendlyName" '\')
+        done
+        Restart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
         if DowntimePrompt; then
@@ -1045,220 +1026,104 @@ case $choice in
     5.)
         # Start All
         clear
-        NodeStart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to start?" --separate-output 20 78 4 \
-        "1." "Node 1" OFF \
-        "2." "Node 2" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to start?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeStart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         NodeStartArray=($NodeStart)
         for NodeStart in "${NodeStartArray[@]}"; do
-            case $NodeStart in
-                1.)
-                    # Node 1 Start All
-                    clear
-                    echo "Starting all servers on Node 1..."
-                    for n in "${Node1Servers[@]}"
-                    do
-                    ServerStart
-                    done
-                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been started on Node 1"
-                        fi
-                ;;
-                2.)
-                    # Node 2 Start All
-                    clear
-                    echo "Starting all servers on Node 2..."
-                    for n in "${Node2Servers[@]}"
-                    do
-                    ServerStart
-                    done
-                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been started on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been started on Node 2"
-                        fi
-                ;;
-            esac
+            GetAllServersByNode $NodeStart
+            for n in "${AllServersByNode[@]}"; do
+            ServerStart; done
+            clear
+            echo "Starting all servers on Node $NodeStart"
         done
+        if [ "${#NodeStartArray[@]}" -gt 1 ]; then
+            echo "All servers have been started on selected nodes"
+        else
+            echo "All servers have been started on Node $NodeStart"
+        fi
     ;;
     6.)
         # Stop All
         clear
-        passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
-        if [ $PASS == $passinput ]; then
-            NodeStop=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
-            "1." "Node 1" OFF \
-            "2." "Node 2" OFF \
-            3>&1 1>&2 2>&3)
-            NodeStopArray=($NodeStop)
-            if DowntimePrompt; then
-                DowntimeMessageInput
-            fi
-            if (whiptail --title "TheWrightServer" --yesno "Would you like to update before stopping?" 8 78); then
-                updateBeforeStop=true
-            else
-                updateBeforeStop=false
-            fi
-            for NodeStop in "${NodeStopArray[@]}"; do
-                case $NodeStop in
-                    1.)
-                        # Node 1 Stop All
-                        clear
-                        if [ $updateBeforeStop == true ]; then
-                            echo "Starting update on all updateable based servers before stopping..."
-                            for n in "${SnapshotServers[@]}"; do
-                            SnapshotVariableChange; done
-                            for n in "${Node1UpdateServers[@]}"; do
-                            AnnounceDowntimeUpdate; done
-                            ServerInstallBuffer
-                            clear
-                            for n in "${Node1UpdateServers[@]}"; do
-                            ServerInstall; done
-                            for n in "${Node1UpdateServers[@]}"; do
-                            ServerInstallWait; done
-                            clear
-                        fi
-                        echo "Stopping all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node1Servers[@]}"
-                        do
-                        ServerStop
-                        done
-                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been stopped on Node 1"
-                        fi
-                    ;;
-                    2.)
-                        # Node 2 Stop All
-                        clear
-                        if [ $updateBeforeStop == true ]; then
-                            echo "Starting update on all updateable servers before stopping..."
-                            for n in "${Node2UpdateServers[@]}"; do
-                            AnnounceDowntimeUpdate; done
-                            ServerInstallBuffer
-                            clear
-                            for n in "${Node2UpdateServers[@]}"; do
-                            ServerInstall; done
-                            for n in "${Node2UpdateServers[@]}"; do
-                            ServerInstallWait; done
-                            clear
-                        fi
-                        echo "Stopping all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node2Servers[@]}"
-                        do
-                        ServerStop
-                        done
-                        if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been stopped on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been stopped on Node 2"
-                        fi
-                    ;;
-                esac
-            done
-        else
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeStop=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
+        NodeStopArray=($NodeStop)
+        if DowntimePrompt; then
+            DowntimeMessageInput
+        fi
+        for NodeStop in "${NodeStopArray[@]}"; do
+            GetAllServersByNode $NodeStop
+            for n in "${AllServersByNode[@]}"; do
+            ServerStop; done
             clear
-            echo "Incorrect admin password."
-            exit
+            echo "Stopping all servers on Node $NodeStop"
+        done
+        if [ "${#NodeStopArray[@]}" -gt 1 ]; then
+            echo "All servers have been stopped on selected nodes"
+        else
+            echo "All servers have been stopped on Node $NodeStop"
         fi
     ;;
     7.)
         # Restart All
         clear
-        passinput=$(whiptail --passwordbox "Enter Admin Password" 8 78 3>&1 1>&2 2>&3)
-        if [ $PASS == $passinput ]; then
-            NodeRestart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
-            "1." "Node 1" OFF \
-            "2." "Node 2" OFF \
-            3>&1 1>&2 2>&3)
-            NodeRestartArray=($NodeRestart)
-            if DowntimePrompt; then
-                DowntimeMessageInput
-            fi
-            for NodeRestart in "${NodeRestartArray[@]}"; do
-                case $NodeRestart in
-                    1.)
-                        # Node 1 Restart All
-                        clear
-                        echo "Restarting all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node1Servers[@]}"
-                        do
-                        ServerRestart
-                        done
-                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been restarted on Node 1"
-                        fi
-                    ;;
-                    2.)
-                        # Node 2 Restart All
-                        clear
-                        echo "Restarting all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
-                        do
-                        AnnounceMessage
-                        done
-                        for n in "${Node2Servers[@]}"
-                        do
-                        ServerRestart
-                        done
-                        if [ ${#NodeRestartArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been restarted on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been restarted on Node 2"
-                        fi
-                    ;;
-                esac
-            done
-        else
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeRestart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
+        NodeRestartArray=($NodeRestart)
+        if DowntimePrompt; then
+            DowntimeMessageInput
+        fi
+        for NodeRestart in "${NodeRestartArray[@]}"; do
+            GetAllServersByNode $NodeRestart
+            for n in "${AllServersByNode[@]}"; do
+            ServerRestart; done
             clear
-            echo "Incorrect admin password."
-            exit
+            echo "Restarting all servers on Node $NodeRestart"
+        done
+        if [ "${#NodeRestartArray[@]}" -gt 1 ]; then
+            echo "All servers have been restarted on selected nodes"
+        else
+            echo "All servers have been restarted on Node $NodeRestart"
         fi
     ;;
     8.)
         # Backup
         if (whiptail --title "Warning" --yesno "Backing up takes up considerable resources and may cause lag. Are you sure you want to continue?" 8 78); then
             ANNOUNCE_MESSAGE="This server is starting a backup that may cause small occasional lag spikes. This process is estimated to take around 20 minutes, and no downtime is expected."
-            Backup=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
-            "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
-            "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-            "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
-            "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
-            "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
-            "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" OFF \
-            "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
-            "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
-            "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
-            "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
-            "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
-            "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
-            3>&1 1>&2 2>&3)
+            declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
+            )
+            GetAllServers
+            for n in "${AllServers[@]}"; do
+                GetFriendlyName
+                args+=("$n" "$FriendlyName" '\')
+            done
+            Backup=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
             BackupArray=($Backup)
             clear
             for n in "${BackupArray[@]}"
@@ -1280,20 +1145,16 @@ case $choice in
     9.)
         # Send Message
         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-        SendMessage=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" ON \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" ON \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" ON \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" ON \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" ON \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" ON \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" ON \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" ON \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" ON \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" ON \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" ON \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+            --title "TheWrightServer" \
+            --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllServers[@]}"; do
+            GetFriendlyName
+            args+=("$n" "$FriendlyName" '\')
+        done
+        SendMessage=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         SendMessageArray=($SendMessage)
         clear
         for n in "${SendMessageArray[@]}"
@@ -1303,18 +1164,26 @@ case $choice in
     ;;
     10.)
         # Failed Backup Check
+        GetAllServers
         clear
-        for n in "${AllAllServers[@]}";do
+        if [ "${#AllServers[@]}" = 0 ]; then
+            echo "There aren't yet any servers linked with this account."
+        fi
+        for n in "${AllServers[@]}";do
         HandleFailedBackup;done
     ;;
     11.)
         # Server Status
+        GetAllServers
         clear
-        for n in "${AllAllServers[@]}"; do
+        if [ "${#AllServers[@]}" = 0 ]; then
+            echo "There aren't yet any servers linked with this account."
+        fi
+        for n in "${AllServers[@]}"; do
         GetServerStatus; done
     ;;
     12.)
         # Exit
         exit
-    ;;   
+    ;;
 esac

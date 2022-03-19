@@ -1,4 +1,8 @@
 {
     "host": "http://pterodactyl.host",
-    "apikey": "Pterodactyl Client API Key"
+    "apikey": "Pterodactyl Client API Key",
+    "applicationKey": "Pterodactyl Application API Key",
+    "paperEggID": "Pterodactyl Paper Egg ID",
+    "snapshotEggID": "Pterodactyl Snapshot Egg ID",
+    "paperGeyserEggID": "Pterodactyl Paper Geyser Egg ID"
 }
