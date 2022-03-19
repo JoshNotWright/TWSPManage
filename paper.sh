@@ -804,6 +804,16 @@ function GetPaperGeyserServers {
     )
 }
 
+function GetFriendlyNodeName {
+    FriendlyNodeName=$( curl -s "$HOST/api/application/nodes/$n" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r '.attributes' | jq -r '.name'
+    )
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
@@ -1039,48 +1049,29 @@ case $choice in
     5.)
         # Start All
         clear
-        NodeStart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to start?" --separate-output 20 78 4 \
-        "1." "Node 1" OFF \
-        "2." "Node 2" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to start?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeStart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         NodeStartArray=($NodeStart)
         for NodeStart in "${NodeStartArray[@]}"; do
-            case $NodeStart in
-                1.)
-                    # Node 1 Start All
-                    GetAllServersByNode 1
-                    clear
-                    echo "Starting all servers on Node 1..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerStart
-                    done
-                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
-                            :
-                        else
-                            clear
-                            echo "All servers have been started on Node 1"
-                        fi
-                ;;
-                2.)
-                    # Node 2 Start All
-                    GetAllServersByNode 2
-                    clear
-                    echo "Starting all servers on Node 2..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerStart
-                    done
-                    if [ ${#NodeStartArray[@]} -gt 1 ]; then
-                            clear
-                            echo "All servers have been started on selected nodes"
-                        else
-                            clear
-                            echo "All servers have been started on Node 2"
-                        fi
-                ;;
-            esac
+            GetAllServersByNode $NodeStart
+            for n in "${AllServersByNode[@]}"; do
+            ServerStart; done
+            clear
+            echo "Starting all servers on Node $NodeStart"
         done
+        if [ "${#NodeStartArray[@]}" -gt 1 ]; then
+            echo "All servers have been started on selected nodes"
+        else
+            echo "All servers have been started on Node $NodeStart"
+        fi
     ;;
     6.)
         # Stop All
