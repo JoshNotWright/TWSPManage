@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/bash
 # Server Management Tool for TheWrightServer
 # Todo
 # - Cancel in sub menu take you back to menu
@@ -788,15 +788,24 @@ function GetAllServers {
     )
 }
 
-function GetNodeCount {
-    NodeCount=($( curl -s "$HOST/api/application/nodes" \
+function GetAllNodes {
+    AllNodes=($( curl -s "$HOST/api/application/nodes" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
     -H 'Authorization: Bearer '$APPLICATION_KEY'' \
     -X GET \
-    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.uuid')
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.id')
     )
-    NodeCount="${#NodeCount[@]}"
+}
+
+function GetAllServersByNode {
+    AllServersByNode=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$APPLICATION_KEY'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.node=="$1")" | jq -r '.uuid')
+    )
 }
 
 # Menu
@@ -1326,7 +1335,7 @@ case $choice in
     ;;
     13.)
         # Node Count Test
-        GetNodeCount
-        echo $NodeCount
+        GetAllServersByNode 2
+        echo "${AllServersByNode[@]}"
     ;;   
 esac
