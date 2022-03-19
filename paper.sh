@@ -788,6 +788,17 @@ function GetAllServers {
     )
 }
 
+function GetNodeCount {
+    NodeCount=($( curl -s "$HOST/api/application/nodes" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$APPLICATION_KEY'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.uuid')
+    )
+    NodeCount="${#NodeCount[@]}"
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
@@ -1291,7 +1302,11 @@ case $choice in
     ;;
     10.)
         # Failed Backup Check
+        GetAllServers
         clear
+        if [ "${#AllAllServers[@]}" = 0 ]; then
+            echo "There aren't yet any servers linked with this account."
+        fi
         for n in "${AllAllServers[@]}";do
         HandleFailedBackup;done
     ;;
@@ -1299,6 +1314,9 @@ case $choice in
         # Server Status
         GetAllServers
         clear
+        if [ "${#AllAllServers[@]}" = 0 ]; then
+            echo "There aren't yet any servers linked with this account."
+        fi
         for n in "${AllAllServers[@]}"; do
         GetServerStatus; done
     ;;
@@ -1307,11 +1325,8 @@ case $choice in
         exit
     ;;
     13.)
-        # Get All Servers Test
-        GetAllServers
-        echo ${AllAllServers[@]}
-        echo ${AllServers[@]}
-        for n in "${AllAllServers[@]}"; do
-        GetServerStatus; done
+        # Node Count Test
+        GetNodeCount
+        echo $NodeCount
     ;;   
 esac
