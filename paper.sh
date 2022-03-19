@@ -1070,6 +1070,8 @@ case $choice in
         for NodeStop in "${NodeStopArray[@]}"; do
             GetAllServersByNode $NodeStop
             for n in "${AllServersByNode[@]}"; do
+            AnnounceMessage; done
+            for n in "${AllServersByNode[@]}"; do
             ServerStop; done
             clear
             echo "Stopping all servers on Node $NodeStop"
@@ -1099,6 +1101,8 @@ case $choice in
         fi
         for NodeRestart in "${NodeRestartArray[@]}"; do
             GetAllServersByNode $NodeRestart
+            for n in "${AllServersByNode[@]}"; do
+            AnnounceMessage; done
             for n in "${AllServersByNode[@]}"; do
             ServerRestart; done
             clear
