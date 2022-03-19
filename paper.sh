@@ -12,14 +12,9 @@ APIKEY=$(jq -r '.apikey' config.json)
 applicationKey=$(jq -r '.applicationKey' config.json)
 paperEggID=$(jq -r '.paperEggID' config.json)
 snapshotEggID=$(jq -r '.snapshotEggID' config.json)
+paperGeyserEggID=$(jq -r '.paperGeyserEggID' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
-
-# List of Servers running on the Paper + Geyser egg
-PaperGeyserServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-)
 
 # List of Servers for Update ALL function
 AllServers=(
@@ -813,6 +808,16 @@ function GetSnapshotServers {
     )
 }
 
+function GetPaperGeyserServers {
+    PaperGeyserServers=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.egg=="$paperGeyserEggID")" | jq -r '.uuid')
+    )
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
@@ -863,6 +868,7 @@ case $choice in
             ;;
             2.)
                 # Paper + Geyser Server Update
+                GetPaperGeyserServers
                 clear
                 echo "Starting update on all Paper + Geyser based servers..."
                 for n in "${PaperGeyserServers[@]}"; do
