@@ -11,6 +11,7 @@ HOST=$(jq -r '.host' config.json)
 APIKEY=$(jq -r '.apikey' config.json)
 applicationKey=$(jq -r '.applicationKey' config.json)
 paperEggID=$(jq -r '.paperEggID' config.json)
+snapshotEggID=$(jq -r '.snapshotEggID' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
@@ -31,8 +32,6 @@ AllServers=(
     'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
-
-
 # List of Node 1 Servers
 Node1Servers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
@@ -51,11 +50,6 @@ Node2Servers=(
     'bf8e8bc0-de79-456d-9bde-8a72274c1785'
     '3c8b3001-1182-433f-8aec-af21a56b422c'
     'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
-# List of Snapshot Servers
-SnapshotServers=(
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
 )
 
 # List of Update-able Node 1 Servers
@@ -809,6 +803,16 @@ function GetPaperServers {
     )
 }
 
+function GetSnapshotServers {
+    SnapshotServers=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r ".data[].attributes | select(.egg=="$snapshotEggID")" | jq -r '.uuid')
+    )
+}
+
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
     "13." "Test" \
@@ -882,6 +886,7 @@ case $choice in
             ;;
             3.)
                 # Snapshot Server Update
+                GetSnapshotServers
                 clear
                 for n in "${SnapshotServers[@]}"; do
                 AnnounceDowntimeUpdate; done
