@@ -1,11 +1,5 @@
 #!/bin/bash
 # Server Management Tool for TheWrightServer
-# Todo
-# - Cancel in sub menu take you back to menu
-# - Ask if user wants to update all before stopping servers
-# - Dockerize
-# - Add GUI to the new backup functions
-# - Change Start/Restart/Stop All to a checklist instead of a radio list
 
 HOST=$(jq -r '.host' config.json)
 APIKEY=$(jq -r '.apikey' config.json)
@@ -14,22 +8,6 @@ paperEggID=$(jq -r '.paperEggID' config.json)
 snapshotEggID=$(jq -r '.snapshotEggID' config.json)
 paperGeyserEggID=$(jq -r '.paperGeyserEggID' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
-PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
-
-# List of Update-able Node 1 Servers
-Node1UpdateServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-)
-
-# List of Update-able Node 2 Servers
-Node2UpdateServers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
 
 # API call to request server install and then wait 10 seconds
 function ServerInstall {
@@ -1208,10 +1186,5 @@ case $choice in
     12.)
         # Exit
         exit
-    ;;
-    13.)
-        # Test
-        GetAllUpdateServers
-        echo "${AllUpdateServers[@]}"
     ;;
 esac
