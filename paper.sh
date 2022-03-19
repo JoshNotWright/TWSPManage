@@ -993,20 +993,16 @@ case $choice in
     ;;
     4.)
         # Restart
-        Restart=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" OFF \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" OFF \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" OFF \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" OFF \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" OFF \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" OFF \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" OFF \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" OFF \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" OFF \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" OFF \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" OFF \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllAllServers[@]}"; do
+                GetFriendlyName
+                args+=("$n" "$FriendlyName" '\')
+        done
+        Restart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         RestartArray=($Restart)
         clear
         if DowntimePrompt; then
