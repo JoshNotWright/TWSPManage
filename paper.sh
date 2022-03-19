@@ -727,6 +727,7 @@ function GetAllNodes {
     )
 }
 
+# Pulls every server associated with the node you pass through
 function GetAllServersByNode {
     AllServersByNode=()
     AllServersByNode=($( curl -s "$HOST/api/application/servers" \
