@@ -1061,9 +1061,10 @@ case $choice in
             case $NodeStart in
                 1.)
                     # Node 1 Start All
+                    GetAllServersByNode 1
                     clear
                     echo "Starting all servers on Node 1..."
-                    for n in "${Node1Servers[@]}"
+                    for n in "${AllServersByNode[@]}"
                     do
                     ServerStart
                     done
@@ -1076,9 +1077,10 @@ case $choice in
                 ;;
                 2.)
                     # Node 2 Start All
+                    GetAllServersByNode 2
                     clear
                     echo "Starting all servers on Node 2..."
-                    for n in "${Node2Servers[@]}"
+                    for n in "${AllServersByNode[@]}"
                     do
                     ServerStart
                     done
@@ -1205,13 +1207,14 @@ case $choice in
                 case $NodeRestart in
                     1.)
                         # Node 1 Restart All
+                        GetAllServersByNode 1
                         clear
                         echo "Restarting all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         AnnounceMessage
                         done
-                        for n in "${Node1Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         ServerRestart
                         done
@@ -1224,13 +1227,14 @@ case $choice in
                     ;;
                     2.)
                         # Node 2 Restart All
+                        GetAllServersByNode 2
                         clear
                         echo "Restarting all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         AnnounceMessage
                         done
-                        for n in "${Node2Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         ServerRestart
                         done
@@ -1289,20 +1293,16 @@ case $choice in
     9.)
         # Send Message
         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
-        SendMessage=$(whiptail --title "TheWrightServer" --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
-        "068416f4-ea04-4b41-8fe9-ecad94000059" "Legion for Vendetta" ON \
-        "b20a74c4-0e64-4a51-af4d-2a964a41207b" "The Homies" ON \
-        "9dfb8354-67a6-4a9e-9447-965c939e7ceb" "Snapshot" ON \
-        "29248816-96e7-4c20-ae88-5d8e90334f94" "Pixelmon Reforged" ON \
-        "2efe6e55-8b98-4cba-942a-564d584623ae" "Skyblock Randomizer" ON \
-        "c4fdb228-457d-4537-9200-f6ba33bb8b5b" "MineColonies" ON \
-        "699e30b5-e824-48a8-a0bc-41daf9e7f50e" "RAD" ON \
-        "941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2" "Survival" ON \
-        "0de1c057-d48c-45f5-9280-849aa664c92a" "Tomas" ON \
-        "bf8e8bc0-de79-456d-9bde-8a72274c1785" "Demon Slayers Unleashed" ON \
-        "3c8b3001-1182-433f-8aec-af21a56b422c" "Wittenberg XC" ON \
-        "df35478a-b8d8-4c55-84cd-aef2e40893bf" "Cribo" ON \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+            --title "TheWrightServer" \
+            --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
+        )
+        GetAllServers
+        for n in "${AllAllServers[@]}"; do
+            GetFriendlyName
+            args+=("$n" "$FriendlyName" '\')
+        done
+        SendMessage=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         SendMessageArray=($SendMessage)
         clear
         for n in "${SendMessageArray[@]}"
@@ -1335,8 +1335,19 @@ case $choice in
         exit
     ;;
     13.)
-        # Node Count Test
-        GetPaperServers 
-        echo "${PaperServers[@]}"
+        declare -a args=(
+            --title "TheWrightServer" \
+            --checklist "Choose the servers to message:" --separate-output 20 78 4 \
+        )
+        GetPaperServers
+        for n in "${PaperServers[@]}"; do
+            GetFriendlyName
+            args+=("$n" "$FriendlyName" '\')
+        done
+        testChoice=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
+        testChoiceArray=($testChoice)
+        clear
+        for n in "${testChoiceArray[@]}"; do
+        AnnounceMessage; done
     ;;   
 esac
