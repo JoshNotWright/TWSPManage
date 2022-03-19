@@ -9,6 +9,7 @@
 
 HOST=$(jq -r '.host' config.json)
 APIKEY=$(jq -r '.apikey' config.json)
+APPLICATION_KEY=$(jq -r '.application_key' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 PASS=`echo "CXuTeSJ6rZN1cpYdn1WqmA=="  | openssl enc -base64 -d -aes-256-cbc -pbkdf2 -nosalt -pass pass:garbageKey`
 
@@ -39,21 +40,7 @@ AllServers=(
     'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
-# List of Servers for the ALL Power / ALL Restart functions
-AllAllServers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-    '29248816-96e7-4c20-ae88-5d8e90334f94'
-    '2efe6e55-8b98-4cba-942a-564d584623ae'
-    'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
-    '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
-    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
+
 
 # List of Node 1 Servers
 Node1Servers=(
@@ -792,17 +779,18 @@ function GetSuspensionStatus {
 } 
 
 function GetAllServers {
-    curl -s "$HOST/api/client/" \
+    AllAllServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer '$APIKEY'' \
+    -H 'Authorization: Bearer '$APPLICATION_KEY'' \
     -X GET \
-    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
-
+    -b 'pterodactyl_session'='eyJpdiI6InhIVXp5ZE43WlMxUU1NQ1pyNWRFa1E9PSIsInZhbHVlIjoiQTNpcE9JV3FlcmZ6Ym9vS0dBTmxXMGtST2xyTFJvVEM5NWVWbVFJSnV6S1dwcTVGWHBhZzdjMHpkN0RNdDVkQiIsIm1hYyI6IjAxYTI5NDY1OWMzNDJlZWU2OTc3ZDYxYzIyMzlhZTFiYWY1ZjgwMjAwZjY3MDU4ZDYwMzhjOTRmYjMzNDliN2YifQ%3D%3D' | jq -r .data[].attributes | jq -r '.uuid')
+    )
 }
 
 # Menu
 choice=$(whiptail --title "TheWrightServer Management Tool v3.17" --fb --menu "Select an option" 18 100 10 \
+    "13." "Test" \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -1309,6 +1297,7 @@ case $choice in
     ;;
     11.)
         # Server Status
+        GetAllServers
         clear
         for n in "${AllAllServers[@]}"; do
         GetServerStatus; done
@@ -1316,5 +1305,13 @@ case $choice in
     12.)
         # Exit
         exit
+    ;;
+    13.)
+        # Get All Servers Test
+        GetAllServers
+        echo ${AllAllServers[@]}
+        echo ${AllServers[@]}
+        for n in "${AllAllServers[@]}"; do
+        GetServerStatus; done
     ;;   
 esac
