@@ -27,26 +27,6 @@ AllServers=(
     'df35478a-b8d8-4c55-84cd-aef2e40893bf'
 )
 
-# List of Node 1 Servers
-Node1Servers=(
-    '068416f4-ea04-4b41-8fe9-ecad94000059'
-    'b20a74c4-0e64-4a51-af4d-2a964a41207b'
-    '9dfb8354-67a6-4a9e-9447-965c939e7ceb'
-)
-
-# List of Node 2 Servers
-Node2Servers=(
-    '941a2eb9-e2a2-42ae-9e80-c8e4c8fcf5d2'
-    '0de1c057-d48c-45f5-9280-849aa664c92a'
-    '29248816-96e7-4c20-ae88-5d8e90334f94'
-    '2efe6e55-8b98-4cba-942a-564d584623ae'
-    'c4fdb228-457d-4537-9200-f6ba33bb8b5b'
-    '699e30b5-e824-48a8-a0bc-41daf9e7f50e'
-    'bf8e8bc0-de79-456d-9bde-8a72274c1785'
-    '3c8b3001-1182-433f-8aec-af21a56b422c'
-    'df35478a-b8d8-4c55-84cd-aef2e40893bf'
-)
-
 # List of Update-able Node 1 Servers
 Node1UpdateServers=(
     '068416f4-ea04-4b41-8fe9-ecad94000059'
@@ -759,6 +739,7 @@ function GetSuspensionStatus {
 } 
 
 function GetAllServers {
+    AllAllServers=()
     AllAllServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -769,6 +750,7 @@ function GetAllServers {
 }
 
 function GetAllNodes {
+    AllNodes=()
     AllNodes=($( curl -s "$HOST/api/application/nodes" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -779,6 +761,7 @@ function GetAllNodes {
 }
 
 function GetAllServersByNode {
+    AllServersByNode=()
     AllServersByNode=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -789,6 +772,7 @@ function GetAllServersByNode {
 }
 
 function GetPaperServers {
+    PaperServers=()
     PaperServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -799,6 +783,7 @@ function GetPaperServers {
 }
 
 function GetSnapshotServers {
+    SnapshotServers=()
     SnapshotServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -809,6 +794,7 @@ function GetSnapshotServers {
 }
 
 function GetPaperGeyserServers {
+    PaperGeyserServers=()
     PaperGeyserServers=($( curl -s "$HOST/api/application/servers" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
@@ -1129,6 +1115,7 @@ case $choice in
                 case $NodeStop in
                     1.)
                         # Node 1 Stop All
+                        GetAllServersByNode 1
                         clear
                         if [ $updateBeforeStop == true ]; then
                             echo "Starting update on all updateable based servers before stopping..."
@@ -1145,11 +1132,11 @@ case $choice in
                             clear
                         fi
                         echo "Stopping all servers on Node 1..."
-                        for n in "${Node1Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         AnnounceMessage
                         done
-                        for n in "${Node1Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         ServerStop
                         done
@@ -1162,6 +1149,7 @@ case $choice in
                     ;;
                     2.)
                         # Node 2 Stop All
+                        GetAllServersByNode 2
                         clear
                         if [ $updateBeforeStop == true ]; then
                             echo "Starting update on all updateable servers before stopping..."
@@ -1176,11 +1164,11 @@ case $choice in
                             clear
                         fi
                         echo "Stopping all servers on Node 2..."
-                        for n in "${Node2Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         AnnounceMessage
                         done
-                        for n in "${Node2Servers[@]}"
+                        for n in "${AllServersByNode[@]}"
                         do
                         ServerStop
                         done
