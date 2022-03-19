@@ -1091,58 +1091,31 @@ case $choice in
             DowntimeMessageInput
         fi
         for NodeStop in "${NodeStopArray[@]}"; do
-            case $NodeStop in
-                1.)
-                    # Node 1 Stop All
-                    GetAllServersByNode 1
-                    clear
-                    echo "Stopping all servers on Node 1..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    AnnounceMessage
-                    done
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerStop
-                    done
-                    if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                        :
-                    else
-                        clear
-                        echo "All servers have been stopped on Node 1"
-                    fi
-                ;;
-                2.)
-                    # Node 2 Stop All
-                    GetAllServersByNode 2
-                    clear
-                    echo "Stopping all servers on Node 2..."
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    AnnounceMessage
-                    done
-                    for n in "${AllServersByNode[@]}"
-                    do
-                    ServerStop
-                    done
-                    if [ ${#NodeStopArray[@]} -gt 1 ]; then
-                        clear
-                        echo "All servers have been stopped on selected nodes"
-                    else
-                        clear
-                        echo "All servers have been stopped on Node 2"
-                    fi
-                ;;
-            esac
+            GetAllServersByNode $NodeStop
+            for n in "${AllServersByNode[@]}"; do
+            ServerStop; done
+            clear
+            echo "Stopping all servers on Node $NodeStop"
         done
+        if [ "${#NodeStopArray[@]}" -gt 1 ]; then
+            echo "All servers have been stopped on selected nodes"
+        else
+            echo "All servers have been stopped on Node $NodeStop"
+        fi
     ;;
     7.)
         # Restart All
         clear
-        NodeRestart=$(whiptail --title "TheWrightServer" --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
-        "1." "Node 1" OFF \
-        "2." "Node 2" OFF \
-        3>&1 1>&2 2>&3)
+        declare -a args=(
+                --title "TheWrightServer" \
+                --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
+        )
+        GetAllNodes
+        for n in "${AllNodes[@]}"; do
+                GetFriendlyNodeName
+                args+=("$n" "$FriendlyNodeName" '\')
+        done
+        NodeRestart=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
         NodeRestartArray=($NodeRestart)
         if DowntimePrompt; then
             DowntimeMessageInput
