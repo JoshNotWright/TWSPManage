@@ -7,6 +7,7 @@ applicationKey=$(jq -r '.applicationKey' config.json)
 paperEggID=$(jq -r '.paperEggID' config.json)
 snapshotEggID=$(jq -r '.snapshotEggID' config.json)
 paperGeyserEggID=$(jq -r '.paperGeyserEggID' config.json)
+companyName=$(jq -r '.companyName' config.json)
 ANNOUNCE_MESSAGE="This server is going down momentarily. This process is automated, and the server will be returning soon."
 
 # API call to request server install and then wait 10 seconds
@@ -618,7 +619,7 @@ function GetMCWorld {
 }
 
 function DowntimePrompt {
-    whiptail --title "TheWrightServer" --yesno "Do you want to announce a custom downtime message?" --defaultno 8 78 
+    whiptail --title "$companyName" --yesno "Do you want to announce a custom downtime message?" --defaultno 8 78 
 }
 
 function DowntimeMessageInput {
@@ -793,7 +794,7 @@ function GetAllUpdateServers {
 }
 
 # Menu
-choice=$(whiptail --title "TheWrightServer Management Tool v4.0" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "$companyName Management Tool v4.0" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
@@ -810,7 +811,7 @@ choice=$(whiptail --title "TheWrightServer Management Tool v4.0" --fb --menu "Se
 case $choice in
     1.)
         # Update
-        Update=$(whiptail --title "TheWrightServer" --radiolist "Which servers would you like to update?" --separate-output 20 78 4 \
+        Update=$(whiptail --title "$companyName" --radiolist "Which servers would you like to update?" --separate-output 20 78 4 \
         "1." "Paper Servers" OFF \
         "2." "Paper + Geyser Servers" OFF \
         "3." "Snapshot Server" OFF \
@@ -917,7 +918,7 @@ case $choice in
     2.)
         # Start
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which servers would you like to start?" --separate-output 20 78 4 \
         )
         GetAllServers
@@ -937,7 +938,7 @@ case $choice in
     3.)
         # Stop
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which servers would you like to stop?" --separate-output 20 78 4 \
         )
         GetAllServers
@@ -982,7 +983,7 @@ case $choice in
     4.)
         # Restart
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which servers would you like to restart?" --separate-output 20 78 4 \
         )
         GetAllServers
@@ -1028,7 +1029,7 @@ case $choice in
         # Start All
         clear
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which node would you like to start?" --separate-output 20 78 4 \
         )
         GetAllNodes
@@ -1055,7 +1056,7 @@ case $choice in
         # Stop All
         clear
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which node would you like to stop?" --separate-output 20 78 4 \
         )
         GetAllNodes
@@ -1087,7 +1088,7 @@ case $choice in
         # Restart All
         clear
         declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which node would you like to restart?" --separate-output 20 78 4 \
         )
         GetAllNodes
@@ -1120,7 +1121,7 @@ case $choice in
         if (whiptail --title "Warning" --yesno "Backing up takes up considerable resources and may cause lag. Are you sure you want to continue?" 8 78); then
             ANNOUNCE_MESSAGE="This server is starting a backup that may cause small occasional lag spikes. This process is estimated to take around 20 minutes, and no downtime is expected."
             declare -a args=(
-                --title "TheWrightServer" \
+                --title "$companyName" \
                 --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
             )
             GetAllServers
@@ -1151,7 +1152,7 @@ case $choice in
         # Send Message
         ANNOUNCE_MESSAGE=$(whiptail --inputbox "What would you like your message to be?" 8 78 3>&1 1>&2 2>&3)
         declare -a args=(
-            --title "TheWrightServer" \
+            --title "$companyName" \
             --checklist "Which servers would you like to send the message to?" --separate-output 20 78 4 \
         )
         GetAllServers
