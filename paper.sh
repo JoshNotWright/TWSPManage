@@ -145,9 +145,35 @@ function Backup {
     GetFriendlyName
     GetBackupLimit
     GetBackupCount
-     if [[ "$BackupCount" -eq "$BackupLimit" ]]; then
+    if [[ "$BackupCount" -eq "$BackupLimit" ]]; then
         echo "Reached backup limit on $FriendlyName, removing oldest"
         BackupRemoveOldest
+        curl -s "$HOST/api/client/servers/$n/backups" > /dev/null \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer '$APIKEY'' \
+        -X POST \
+        -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' 
+        msgs=( "Backing up $FriendlyName." "Backing up $FriendlyName.." "Backing up $FriendlyName..." "$FriendlyName is backing up!" "Done" )
+            for i in {1..5}; do
+            sleep 2
+            echo XXX
+            echo $(( i * 20 ))
+            echo ${msgs[i-1]}
+            echo XXX
+            done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
+    elif [[ "$BackupCount" -gt "$BackupLimit" ]]; then
+        echo "It appears you have more backups than your server allows for. Removing oldest backups before attempting a new one."
+        while true; do
+            BackupRemoveOldest
+            GetBackupCount
+            if [[ "$BackupCount" -gt "$((BackupLimit-1))" ]]; then
+                continue
+            else
+                break
+            fi
+        done
+        echo "Extra backups removed. Starting new backup!"
         curl -s "$HOST/api/client/servers/$n/backups" > /dev/null \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
