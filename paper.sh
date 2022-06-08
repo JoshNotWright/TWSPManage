@@ -1145,7 +1145,7 @@ case $choice in
     8.)
         # Backup
         if (whiptail --title "Warning" --yesno "Backing up takes up considerable resources and may cause lag. Are you sure you want to continue?" 8 78); then
-            ANNOUNCE_MESSAGE="This server is starting a backup that may cause small occasional lag spikes. This process is estimated to take around 20 minutes, and no downtime is expected."
+            ANNOUNCE_MESSAGE="This server is starting a backup that may cause small occasional lag spikes. This process is automated and is estimated to take around 20 minutes with no downtime expected."
             declare -a args=(
                 --title "$companyName" \
                 --checklist "Which servers would you like to backup?" --separate-output 20 78 4 \
