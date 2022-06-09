@@ -163,7 +163,7 @@ function Backup {
             echo XXX
             done |whiptail --gauge "Please wait while the server starts backup" 6 60 0
     elif [[ "$BackupCount" -gt "$BackupLimit" ]]; then
-        echo "It appears you have more backups than your server allows for. Removing oldest backups before attempting a new one."
+        echo "It appears you have more backups on $FriendlyName than your server allows for. Removing oldest backups before attempting a new one."
         while true; do
             BackupRemoveOldest
             GetBackupCount
