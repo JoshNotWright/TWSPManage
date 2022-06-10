@@ -355,21 +355,58 @@ function AnnounceDowntimeUpdate {
 }
 
 function BackupRemoveOldest {
-    # API GET List Backups and use JQ to pull UUIDs of all the backups and then use variable filtering to remove the first (and therefore oldest) backup
-    OldestBackup=$( curl -s "$HOST/api/client/servers/$n/backups" \
+    CheckBackupForLock 0
+    if [[ "$BackupLockStatus" == true ]]; then
+        echo "Oldest backup is locked. Searching for oldest unlocked backup..."
+        BackupLoopCount=1
+        GetBackupLimit
+        GetFriendlyName
+        while true; do
+            CheckBackupForLock $BackupLoopCount
+            if [[ "$BackupLockStatus" == false ]]; then
+                GetBackupLimit    
+                echo "Found unlocked backup ${BackupList[$BackupLoopCount]}"
+                break
+            elif [[ "$BackupLoopCount" == "$BackupLimit" ]]; then
+                echo "There are no unlocked backup slots left on $FriendlyName. Please unlock one and try again."
+                exit
+            else
+                let BackupLoopCount++
+                continue
+            fi
+        done
+    fi
+    echo "Removing Backup: ${BackupList[$BackupLoopCount]}"
+    curl -s "$HOST/api/client/servers/$n/backups/${BackupList[$BackupLoopCount]}" > /dev/null \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$APIKEY'' \
+     -X DELETE \
+    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+}
+
+function GetBackupList {
+    BackupList=()
+    BackupList=($( curl -s "$HOST/api/client/servers/$n/backups" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer '$APIKEY'' \
      -X GET \
      -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.data[].attributes' | jq -r '.uuid'
      )
-    echo  Removing Backup: ${OldestBackup:0:36}
-    curl -s "$HOST/api/client/servers/$n/backups/${OldestBackup:0:36}" > /dev/null \
+    )
+}
+
+function CheckBackupForLock {
+    GetBackupList
+    BackupLockStatus=$( curl -s "$HOST/api/client/servers/$n/backups/${BackupList[$1]}" \
      -H 'Accept: application/json' \
      -H 'Content-Type: application/json' \
      -H 'Authorization: Bearer '$APIKEY'' \
-     -X DELETE \
-    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D'
+     -X GET \
+    -b 'pterodactyl_session'='eyJpdiI6IndMaGxKL2ZXanVzTE9iaWhlcGxQQVE9PSIsInZhbHVlIjoib0ovR1hrQlVNQnI3bW9kbTN0Ni9Uc1VydnVZQnRWMy9QRnVuRFBLMWd3eFZhN2hIbjk1RXE0ZVdQdUQ3TllwcSIsIm1hYyI6IjQ2YjUzMGZmYmY1NjQ3MjhlN2FlMDU4ZGVkOTY5Y2Q4ZjQyMDQ1MWJmZTUxYjhiMDJkNzQzYmM3ZWMyZTMxMmUifQ%3D%3D' | jq -r '.attributes' | jq -r '.is_locked'
+     )
+    
 }
 
 function GetFailedBackup {
@@ -820,7 +857,7 @@ function GetAllUpdateServers {
 }
 
 # Menu
-choice=$(whiptail --title "$companyName Management Tool v4.0" --fb --menu "Select an option" 18 100 10 \
+choice=$(whiptail --title "$companyName Management Tool v4.1" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
     "2." "Start" \
     "3." "Stop" \
