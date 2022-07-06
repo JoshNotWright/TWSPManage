@@ -18,8 +18,8 @@ function ServerInstall {
     fi
     GetFriendlyName
     GetServerState 
-    if [ $ServerState = "OFFLINE" ]; then
-        StoppedServers+=("$n")
+    if [ $ServerState = "ONLINE" ]; then
+        RunningServers+=("$n")
     fi
     curl -s "$HOST/api/client/servers/$n/settings/reinstall" > /dev/null \
             -H 'Accept: application/json' \
@@ -857,14 +857,9 @@ case $choice in
                 for n in "${PaperServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${PaperServers[@]}"; do
+                for n in "${RunningServers[@]}"; do
                 ServerStart; done
-                if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${PaperServers[@]}"; do
-                    ServerStartWait; done
-                    for n in "${StoppedServers[@]}"; do
-                    ServerStop; done
-                fi
+
             ;;
             2.)
                 # Paper + Geyser Server Update
@@ -880,14 +875,8 @@ case $choice in
                 for n in "${PaperGeyserServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${PaperGeyserServers[@]}"; do
+                for n in "${RunningServers[@]}"; do
                 ServerStart; done
-                if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${PaperGeyserServers[@]}"; do
-                    ServerStartWait; done
-                    for n in "${StoppedServers[@]}"; do
-                    ServerStop; done
-                fi
                 
             ;;
             3.)
@@ -905,14 +894,8 @@ case $choice in
                 for n in "${SnapshotServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${SnapshotServers[@]}"; do
+                for n in "${RunningServers[@]}"; do
                 ServerStart; done
-                if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${SnapshotServers[@]}"; do
-                    ServerStartWait; done
-                    for n in "${StoppedServers[@]}"; do
-                    ServerStop; done
-                fi
             ;;
             4.)
                 # All Server Update
@@ -930,14 +913,8 @@ case $choice in
                 for n in "${AllUpdateServers[@]}"; do
                 ServerInstallWait; done
                 clear
-                for n in "${AllUpdateServers[@]}"; do
+                for n in "${RunningServers[@]}"; do
                 ServerStart; done
-                if [ ${#StoppedServers[@]} -gt 0 ]; then
-                    for n in "${AllUpdateServers[@]}"; do
-                    ServerStartWait; done
-                    for n in "${StoppedServers[@]}"; do
-                    ServerStop; done
-                fi
             ;;
         esac
     ;;
