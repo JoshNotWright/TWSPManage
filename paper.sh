@@ -521,6 +521,15 @@ function GetFriendlyName {
     )
 }
 
+function GetFriendlyNameByID {
+     FriendlyName=$( curl -s "$HOST/api/application/servers/$n" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$applicationKey'' \
+     -X GET | jq -r '.attributes' | jq -r '.name'
+    )
+}
+
 function GetLastBackup {
     # Pulls the current time
     Now=$(date)
@@ -736,6 +745,20 @@ function GetSuspensionStatus {
      elif [ "$SuspensionStatus" = "=true" ]; then
         SuspensionStatus="true"
      fi
+}
+
+function GetSuspensionStatusByID {
+    SuspensionStatus==$( curl -s "$HOST/api/application/servers/$n" \
+     -H 'Accept: application/json' \
+     -H 'Content-Type: application/json' \
+     -H 'Authorization: Bearer '$applicationKey'' \
+     -X GET | jq -r '.attributes' | jq -r '.suspended'
+     )
+     if [ "$SuspensionStatus" = "=false" ]; then
+        SuspensionStatus="false"
+     elif [ "$SuspensionStatus" = "=true" ]; then
+        SuspensionStatus="true"
+     fi
 } 
 
 function GetAllServers {
@@ -745,6 +768,16 @@ function GetAllServers {
     -H 'Content-Type: application/json' \
     -H 'Authorization: Bearer '$applicationKey'' \
     -X GET | jq -r .data[].attributes | jq -r '.uuid')
+    )
+}
+
+function GetAllServersByID {
+    AllServersByID=()
+    AllServersByID=($( curl -s "$HOST/api/application/servers" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H 'Authorization: Bearer '$applicationKey'' \
+    -X GET | jq -r .data[].attributes | jq -r '.id')
     )
 }
 
@@ -819,6 +852,27 @@ function GetAllUpdateServers {
     AllUpdateServers+=(${SnapshotServers[@]})
 }
 
+function SuspensionToggle {
+    GetSuspensionStatusByID
+    GetFriendlyNameByID
+    if [ "$SuspensionStatus" = "true" ]; then
+        echo "Unsuspending $FriendlyName"
+        curl -s "$HOST/api/application/servers/$n/unsuspend" \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer '$applicationKey'' \
+        -X POST
+    else
+        echo "Suspending $FriendlyName"
+        curl -s "$HOST/api/application/servers/$n/suspend" \
+        -H 'Accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer '$applicationKey'' \
+        -X POST
+    fi
+
+}
+
 # Menu
 choice=$(whiptail --title "$companyName Management Tool v4.1" --fb --menu "Select an option" 18 100 10 \
     "1." "Update" \
@@ -831,8 +885,9 @@ choice=$(whiptail --title "$companyName Management Tool v4.1" --fb --menu "Selec
     "8." "Backup" \
     "9." "Send Message" \
     "10." "Check for Failed Backups" \
-    "11." "Check Server Status" \
-    "12." "Exit" 3>&1 1>&2 2>&3)
+    "11." "Toggle Suspensions" \
+    "12." "Check Server Status" \
+    "13." "Exit" 3>&1 1>&2 2>&3)
 
 case $choice in
     1.)
@@ -1182,6 +1237,26 @@ case $choice in
         HandleFailedBackup;done
     ;;
     11.)
+        # Suspension Toggle
+        declare -a args=(
+                --title "$companyName" \
+                --checklist "Which servers would you like to toggle their suspension status?" --separate-output 20 78 4 \
+        )
+        GetAllServersByID
+        for n in "${AllServersByID[@]}"; do
+                GetFriendlyNameByID
+                args+=("$n" "$FriendlyName" '\')
+        done
+        Suspend=$(whiptail "${args[@]}" 3>&1 1>&2 2>&3)
+        SuspendArray=($Suspend)
+        clear
+        echo -e "Toggling suspension status on selected servers..."
+        for n in "${SuspendArray[@]}"
+        do
+        SuspensionToggle
+        done
+    ;;
+    12.)
         # Server Status
         GetAllServers
         clear
@@ -1191,8 +1266,7 @@ case $choice in
         for n in "${AllServers[@]}"; do
         GetServerStatus; done
     ;;
-    12.)
-        # Exit
+    13.) # Exit
         exit
     ;;
 esac
